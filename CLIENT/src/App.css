@@ -1,0 +1,12 @@
+body,
+html {
+  font-family: 'Raleway';
+}
+
+body {
+  overflow-x: hidden;
+}
+
+.carousel-root {
+  width: 100% !important;
+}

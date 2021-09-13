@@ -1,0 +1,58 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+#root {
+  min-height: 100vh;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.goog-tooltip {
+  display: none !important;
+}
+
+.goog-tooltip:hover {
+  display: none !important;
+}
+
+.goog-text-highlight {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.MuiContainer-root {
+  overflow: hidden;
+}
+
+@font-face {
+  font-family: 'Cool Sans';
+  font-style: normal;
+  font-weight: normal;
+  src: local('Cool Sans'),
+    url('./assets/fonts/Cool-Sans.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Golden Ranger';
+  font-style: normal;
+  font-weight: normal;
+  src: local('Golden Ranger'),
+    url('./assets/fonts/Golden-Ranger.ttf') format('truetype');
+}

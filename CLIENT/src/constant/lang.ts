@@ -1,0 +1,1 @@
+export const langs: string[] = [ 'fr', 'en', 'ja', 'zh-CN', 'it', 'es', 'ru', 'ko', 'nl', 'de', 'pt', 'hi', 'ar']

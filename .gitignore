@@ -1,0 +1,7 @@
+**/node_modules
+**/fichier
+.env
+.eslintcache
+.vscode/extensions.json
+
+**/config/default.json
