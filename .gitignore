@@ -1,6 +1,5 @@
 **/node_modules
 **/fichier
-.env
 .eslintcache
 .vscode/extensions.json
 
