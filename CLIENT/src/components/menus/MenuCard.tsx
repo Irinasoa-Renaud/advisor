@@ -141,15 +141,19 @@ const MenuCard: React.FC<MenuCardProps> = ({
     () => {
       switch (item.type) {
         case 'priceless':
-          setMenuState((s: any) => ({...s, isShowPrice: false, showMenuPrice: false}))
+          setMenuState((s: any) => ({ ...s, isShowPrice: false, showMenuPrice: false }))
           break;
         case 'fixed_price':
-          setMenuState((s: any) => ({...s, isShowPrice: false, showMenuPrice: true}))
+          setMenuState((s: any) => ({
+            ...s,
+            isShowPrice: true,
+            showMenuPrice: true
+          }))
           break;
         default:
-          setMenuState((s: any) => ({...s, isShowPrice: true, showMenuPrice: false}))
+          setMenuState((s: any) => ({ ...s, isShowPrice: true, showMenuPrice: false }))
       }
-      setMenuState((s: any) => ({...s, priceType: item.type, price: item.price.amount || item.price}))
+      setMenuState((s: any) => ({ ...s, priceType: item.type, price: item.price.amount || item.price }))
     },
     [item]
   )
@@ -158,7 +162,7 @@ const MenuCard: React.FC<MenuCardProps> = ({
     () => [
       ...new Set(
         item.foods.map(
-          ({ food: {type} }: any) =>
+          ({ food: { type } }: any) =>
             (typeof type?.name === 'string' && type?.name) ||
             (type?.name as { [key: string]: string })?.fr
         )
@@ -195,7 +199,7 @@ const MenuCard: React.FC<MenuCardProps> = ({
             className={classes.cardAction}
           >
             <CardContent className={classes.cardContent}>
-              <Typography component="h5" variant="h5" style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
+              <Typography component="h5" variant="h5" style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Typography component="h5" variant="h5">
                   {item.name}
                 </Typography>

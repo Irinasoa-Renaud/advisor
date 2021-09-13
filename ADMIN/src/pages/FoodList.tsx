@@ -232,7 +232,6 @@ const FoodListPage: React.FC = () => {
       />
       <Paper className={classes.root}>
 
-        {console.log("records", records)}
         <TableContainer
           headCells={headCells}
           records={records.sort((a: any, b: any) => a.priority - b.priority)}

@@ -476,7 +476,7 @@ const MenuDetailsDialog: React.FC<MenuDetailsDialogProps> = ({
                 ...item,
                 price: {
                   ...item.price,
-                  amount: (showGlobalPrice || menuState.priceType !== 'priceless') ? (menuState.isShowPrice ? item.price.amount : 0) : 0
+                  amount: menuState.isShowPrice ? item.price.amount : 0
                 }
               },
               quantity,
@@ -900,7 +900,7 @@ const MenuDetailsDialog: React.FC<MenuDetailsDialogProps> = ({
             {isNew(menu.id) ? 'Ajouter au panier' : 'Modifier'}
           </span>
           {(menuState.isShowPrice || menuState.priceType === 'fixed_price') && showGlobalPrice && <span style={{ marginLeft: 'auto' }}>
-            {menuState.priceType === 'fixed_price' ? ('€' + ((item.price.amount / 100) + (+additionalPrice / 100))) : ('€' + estimateMenuPrice(menu) / 100)}
+            {('€' + estimateMenuPrice(menu) / 100)}
           </span>}
         </Button>
         {!isNew(menu.id) && (

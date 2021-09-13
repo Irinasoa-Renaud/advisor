@@ -173,6 +173,8 @@ function TableToolbar<T>(props: TableToolbarProps<T>) {
   const [activeButtonId, setActiveButtonId] = useState<number>(0);
 
   const [restoOptions, setRestoOptions] = useState<any[]>([]);
+  const [activeType, setActiveType] = useState<boolean>(false);
+  const [restaurantSelected, setRestaurantSelected] = useState<any>(false);
   const [foodType, setFoodType] = useState<any[]>([]);
 
   const noDuplicate = (foods: any[]) => {
@@ -182,7 +184,10 @@ function TableToolbar<T>(props: TableToolbarProps<T>) {
     for (let i = 0; i < foods.length; i++) {
 
       for (let a = 0; a < foods[i].foodTypes.length; a++) {
-        listFoods.push(foods[i].foodTypes[a]);
+        listFoods.push({
+          ...foods[i].foodTypes[a],
+          restoName: foods[i].name
+        });
       }
 
     }
@@ -198,7 +203,7 @@ function TableToolbar<T>(props: TableToolbarProps<T>) {
 
     getRestaurants()
       .then((data: any) => {
-        setFoodType(noDuplicate(data).map((d: any) => ({ label: d.name.fr, value: d.name.fr })));
+        setFoodType(noDuplicate(data).map((d: any) => ({ label: d.name.fr, value: d.name.fr, restoName: d.restoName })));
         setRestoOptions(data.map((d: any) => ({ label: d.name, value: d.name })) || [])
       });
 
@@ -208,7 +213,7 @@ function TableToolbar<T>(props: TableToolbarProps<T>) {
         onActivateFilter?.(id as string, type);
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [setRestaurantSelected]);
 
   const renderFilters = useCallback(() => {
     const commandTypeOptions = [
@@ -580,10 +585,13 @@ function TableToolbar<T>(props: TableToolbarProps<T>) {
                         labelId="demo-simple-select-outlined-label"
                         id="demo-simple-select-outlined"
                         value={filterValues[id as keyof T]?.restaurant || ''}
-                        onChange={({ target: { value } }) =>
+                        onChange={({ target: { value } }) => {
                           onFilterValuesChange?.(id as string, {
                             restaurant: value as string,
                           })
+                          setRestaurantSelected(value)
+                          setActiveType(true)
+                        }
                         }
                       >
                         {restoOptions.map(({ label, value }: any, index: number) => (
@@ -604,30 +612,36 @@ function TableToolbar<T>(props: TableToolbarProps<T>) {
               else if (filter.type === 'TYPE_PLAT')
                 return (
                   <React.Fragment key={id as string}>
-                    <FormControl variant="filled" style={{ width: '200px', marginRight: '8px' }}>
-                      <InputLabel id="demo-simple-select-outlined-label" >Type</InputLabel>
-                      <Select
-                        labelId="demo-simple-select-outlined-label"
-                        id="demo-simple-select-outlined"
-                        value={filterValues[id as keyof T]?.restaurant || ''}
-                        onChange={({ target: { value } }) =>
-                          onFilterValuesChange?.(id as string, {
-                            restaurant: value as string,
-                          })
-                        }
-                      >
-                        {foodType.map(({ label, value }: any, index: number) => (
-                          <MenuItem key={index} value={value}>{label}</MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                    {!alwaysOn && (
-                      <IconButton
-                        onClick={() => onDeactivateFilter?.(id as string)}
-                      >
-                        <Close />
-                      </IconButton>
+
+                    {activeType && (
+                      <>
+                        <FormControl variant="filled" style={{ width: '200px', marginRight: '8px' }}>
+                          <InputLabel id="demo-simple-select-outlined-label" >Type</InputLabel>
+                          <Select
+                            labelId="demo-simple-select-outlined-label"
+                            id="demo-simple-select-outlined"
+                            value={filterValues[id as keyof T]?.restaurant || ''}
+                            onChange={({ target: { value } }) =>
+                              onFilterValuesChange?.(id as string, {
+                                restaurant: value as string,
+                              })
+                            }
+                          >
+                            {foodType.filter((items: any) => items.restoName === restaurantSelected).map(({ label, value }: any, index: number) => (
+                              <MenuItem key={index} value={value}>{label}</MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                        {!alwaysOn && (
+                          <IconButton
+                            onClick={() => onDeactivateFilter?.(id as string)}
+                          >
+                            <Close />
+                          </IconButton>
+                        )}
+                      </>
                     )}
+
                   </React.Fragment>
                 )
             }

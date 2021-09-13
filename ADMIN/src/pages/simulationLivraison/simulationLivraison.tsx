@@ -56,7 +56,7 @@ const SimulationLivraison: FC = () => {
 
     useEffect(() => {
 
-        new google.maps.Map(document.getElementById("map") as HTMLElement, {
+        new window.google.maps.Map(document.getElementById("map") as HTMLElement, {
             center: { lat: 48.866667, lng: 2.333333 },
             zoom: 15,
         })

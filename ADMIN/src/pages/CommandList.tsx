@@ -173,7 +173,6 @@ const CommandList: React.FC = () => {
                 id: 'totalPrice',
                 label: 'Prix',
                 type: 'PRICE',
-                alwaysOn: true,
               },
               {
                 id: 'createdAt',
