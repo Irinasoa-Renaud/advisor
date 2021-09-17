@@ -179,7 +179,6 @@ const RestoRecommanderListPage: React.FC = () => {
                 id: 'restaurant',
                 label: 'Restaurant',
                 type: 'RESTAURANT',
-                alwaysOn: isRestaurantAdmin ? false : true,
               },
             ],
             onDragEnd: (source, destination) =>

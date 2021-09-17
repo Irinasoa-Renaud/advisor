@@ -78,6 +78,7 @@ export type FilterType =
   | 'RESTAURANT'
   | 'TYPE_PLAT'
   | 'PRICE'
+  | 'ALLERGENE'
   ;
 
 export type FilterSwitchOption = {
@@ -86,7 +87,7 @@ export type FilterSwitchOption = {
 };
 
 type Filter<T> = {
-  id: keyof T;
+  id: any;
   label: string;
   alwaysOn?: boolean;
 } & (
@@ -99,7 +100,9 @@ type Filter<T> = {
       'RESTAURANT' |
       'ATTRIBUTES' |
       'TYPE_PLAT' |
-      'PRICE';
+      'PRICE' |
+      'ALLERGENE'
+
     }
     | {
       type: 'BOOLEAN';
@@ -132,6 +135,7 @@ export type FilterValue = {
   max?: Number;
   restaurant?: string;
   attributes?: string;
+  allergene?: string;
 };
 
 export type FilterValues<T> = {
@@ -244,7 +248,36 @@ function TableToolbar<T>(props: TableToolbarProps<T>) {
                         filterValues[id as keyof T]?.attributes || ''
                       }
                       onChange={({ target: { value } }) => {
-                        onFilterValuesChange?.(id as string, { attributes: value })
+                        onFilterValuesChange?.(id as string, {
+                          attributes: value,
+                        })
+                      }
+                      }
+                    />
+                    {!alwaysOn && (
+                      <IconButton
+                        onClick={() => onDeactivateFilter?.(id as string)}
+                      >
+                        <Close />
+                      </IconButton>
+                    )}
+                  </React.Fragment>
+                );
+              }
+
+
+              if (filter.type === 'ALLERGENE') {
+                return (
+                  <React.Fragment key={id as string}>
+                    <TextField
+                      placeholder={label}
+                      value={
+                        filterValues[id as keyof T]?.allergene || ''
+                      }
+                      onChange={({ target: { value } }) => {
+                        onFilterValuesChange?.(id as string, {
+                          allergene: value,
+                        })
                       }
                       }
                     />
@@ -716,6 +749,7 @@ function TableToolbar<T>(props: TableToolbarProps<T>) {
             onClose={() => setFilterAnchor(undefined)}
             anchorEl={filterAnchor}
           >
+
             {filters
               ?.filter(({ id }) => !activatedFilters.find((k) => k === id))
               .map(({ id, label, type }) => (

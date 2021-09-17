@@ -304,6 +304,7 @@ const RestaurantForm: React.FC<RestaurantFormProps> = ({
   );
 
   const [isDelivery, setIsDelivery] = useState<boolean>(values.delivery);
+  const [isAEmporter, setIsAEmporter] = useState<boolean>(values.aEmporter);
   const [deliveryFixed, setDeliveryFixed] = useState<boolean>(values.deliveryFixed);
   const [isCB, setIsCB] = useState<boolean>(values.paiementCB);
   const [isDirectToAdvisor, setIsDirectToAdvisor] = useState<boolean>(values.cbDirectToAdvisor);
@@ -363,11 +364,6 @@ const RestaurantForm: React.FC<RestaurantFormProps> = ({
       .then((data) => setCategoryOptions(data))
       .finally(() => setLoadingCategories(false));
 
-    // setLoadingTypes(true);
-    // getFoodTypes()
-    //   .then((data) => setTypeOptions(data))
-    //   .finally(() => setLoadingTypes(false));
-
     setLoadingUsers(true);
     getUsers({ role: 'ROLE_RESTAURANT_ADMIN', alreadyRestaurantAdmin: false })
       .then((data) => {
@@ -388,8 +384,6 @@ const RestaurantForm: React.FC<RestaurantFormProps> = ({
         variant: 'warning',
       });
     }
-
-
 
     addnewLivraison(initialValues.livraison)
 
@@ -433,6 +427,10 @@ const RestaurantForm: React.FC<RestaurantFormProps> = ({
 
     if (name === 'cbDirectToAdvisor') {
       setIsDirectToAdvisor(checked)
+    }
+
+    if (name === 'aEmporter') {
+      setIsAEmporter(checked)
     }
 
     setValues((values) => ({
@@ -1048,7 +1046,7 @@ const RestaurantForm: React.FC<RestaurantFormProps> = ({
               control={
                 <IOSSwitch
                   defaultChecked={initialValues.aEmporter}
-                  onChange={handleSwitchChange}
+                  onChange={handleSwitchDelivery}
                   name="aEmporter"
                 />
               }
@@ -1297,29 +1295,32 @@ const RestaurantForm: React.FC<RestaurantFormProps> = ({
         </>)
         }
 
-        {deliveryFixed && (
-          <Grid item xs={12}>
-            <Typography variant="h5" gutterBottom>
-              Prix de livraison
-            </Typography>
-            <TextField
-              name="deliveryPrice"
-              type="number"
-              placeholder="Prix de livraison "
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">€</InputAdornment>
-                ),
-              }}
-              variant="outlined"
-              fullWidth
-              defaultValue={initialValues.deliveryPrice}
-              error={!!errors.deliveryPrice}
-              helperText={errors.deliveryPrice}
-              onBlur={handleInputBlur}
-            />
-          </Grid>
-        )}
+        {
+          (isDelivery && deliveryFixed) && (
+            <>
+              <Grid item xs={12}>
+                <Typography variant="h5" gutterBottom>
+                  Prix de livraison
+                </Typography>
+                <TextField
+                  name="deliveryPrice"
+                  type="number"
+                  placeholder="Prix de livraison "
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">€</InputAdornment>
+                    ),
+                  }}
+                  variant="outlined"
+                  fullWidth
+                  defaultValue={initialValues.deliveryPrice}
+                  error={!!errors.deliveryPrice}
+                  helperText={errors.deliveryPrice}
+                  onBlur={handleInputBlur}
+                />
+              </Grid>
+            </>
+          )}
 
         {isDelivery && (
           <Grid item xs={12}>
@@ -1345,10 +1346,9 @@ const RestaurantForm: React.FC<RestaurantFormProps> = ({
 
         {/**
  * -------------------------------------------------------------------------------------
- */}
+       */}
 
-
-        {isDelivery && <Grid item xs={12}>
+        {(isDelivery || isAEmporter) && <Grid item xs={12}>
           <Typography variant="h5" gutterBottom>
             Remise
           </Typography>

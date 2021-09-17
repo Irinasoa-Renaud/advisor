@@ -124,7 +124,7 @@ const HomePage: React.FC = () => {
     setNewRestaurantSection(0);
 
     getRestaurants({
-      limit: 3,
+      limit: 4,
       searchCategory: 'new',
     })
       .then((data) => {
@@ -323,6 +323,7 @@ const HomePage: React.FC = () => {
         <PlatRecommander
           clsx={clsx}
           Link={Link}
+          title="Plats populaires"
         />
 
         {/* Resto recommander here */}

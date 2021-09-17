@@ -419,33 +419,6 @@ const MenuDetailsDialog: React.FC<MenuDetailsDialogProps> = ({
     dispatch({ type: 'increment_quantity' });
   }, [dispatch]);
 
-  const [obligatoryLength, setObligatoryLength] = useState(0)
-
-  const checkIfAllObligatoryIsSelected = useCallback(
-    () => {
-      let count2 = 0;
-
-      foods.forEach((food: any) => {
-        food.food.options.forEach((op: any) => {
-          op.items.forEach((item: any) => {
-            if (item.isObligatory) {
-              count2++
-            }
-          })
-        })
-      })
-
-      console.log(count2, obligatoryLength)
-
-      if (obligatoryLength > count2) {
-        return false;
-      } else if (obligatoryLength === count2) {
-        return true;
-      }
-    },
-    [foods, obligatoryLength]
-  )
-
   const addMenu = useCallback(
     () => {
       onClose({
@@ -476,7 +449,7 @@ const MenuDetailsDialog: React.FC<MenuDetailsDialogProps> = ({
                 ...item,
                 price: {
                   ...item.price,
-                  amount: menuState.isShowPrice ? item.price.amount : 0
+                  amount: (showGlobalPrice || menuState.priceType !== 'priceless') ? (menuState.isShowPrice ? item.price.amount : 0) : 0
                 }
               },
               quantity,
@@ -631,7 +604,7 @@ const MenuDetailsDialog: React.FC<MenuDetailsDialogProps> = ({
                           ({ food: { _id } }) => _id === food._id
                         )[0]?.options;
 
-                        if (!option.maxOptions)
+                        if (!option.maxOptions || !option.items.length)
                           return null;
 
                         return (
@@ -688,34 +661,39 @@ const MenuDetailsDialog: React.FC<MenuDetailsDialogProps> = ({
                                                 item,
                                               },
                                             });
-                                            if (item.isObligatory) {
-                                              setObligatoryLength(obligatoryLength + 1)
-                                            }
                                           }}
                                         />
                                       }
                                       classes={{ label: classes.label }}
+                                      labelPlacement="start"
                                       label={
                                         <Grid container alignItems="center">
+
                                           <Grid item>
+
                                             <Avatar
+
                                               className={classes.itemImage}
                                               src={item.imageURL}
                                               alt={item.name}
                                             />
+
                                           </Grid>
-                                          <Grid item xs>
-                                            <Typography>{item.name} {item.isObligatory ? '(Obligatoire)' : ''}</Typography>
+
+                                          <Grid item>
+
+                                            <Typography>
+                                              {item.name}
+                                              <br />
+                                              {(item.price &&
+                                                item.price.amount &&
+                                                showGlobalPrice &&
+                                                menuState.isShowPrice) ? `€ ${(item.price.amount / 100)}` : ' '}
+
+                                            </Typography>
+
                                           </Grid>
-                                          {item.price && menuState.isShowPrice && item.price.amount !== 0 && showGlobalPrice && (
-                                            <Grid item>
-                                              <Typography>{`€${(
-                                                item.price.amount / 100
-                                              ).toLocaleString(undefined, {
-                                                minimumFractionDigits: 1,
-                                              })}`}</Typography>
-                                            </Grid>
-                                          )}
+
                                         </Grid>
                                       }
                                     />
@@ -740,22 +718,18 @@ const MenuDetailsDialog: React.FC<MenuDetailsDialogProps> = ({
                                         />
                                       </Grid>
                                       <Grid item xs>
-                                        <Typography>{item.name} {item.isObligatory ? '(Obligatoire)' : ''}</Typography>
+
+                                        <Typography>
+                                          {item.name}
+                                          <br />
+                                          {(item.price &&
+                                            item.price.amount &&
+                                            showGlobalPrice &&
+                                            menuState.isShowPrice) ? `€ ${(item.price.amount / 100)}` : ``}
+                                        </Typography>
+
                                       </Grid>
-                                      {item.price && item.price.amount !== 0 && showGlobalPrice && menuState.isShowPrice && (
-                                        <Grid
-                                          item
-                                          style={{
-                                            marginRight: theme.spacing(1),
-                                          }}
-                                        >
-                                          <Typography>{`€${(
-                                            item.price.amount / 100
-                                          ).toLocaleString(undefined, {
-                                            minimumFractionDigits: 1,
-                                          })}`}</Typography>
-                                        </Grid>
-                                      )}
+
                                       {options &&
                                         options
                                           .filter(
@@ -768,7 +742,7 @@ const MenuDetailsDialog: React.FC<MenuDetailsDialogProps> = ({
                                             <Grid item>
                                               <MiniFab
                                                 color="primary"
-                                                onClick={() => {
+                                                onClick={() =>
                                                   dispatch({
                                                     type:
                                                       'decrement_option_item',
@@ -778,10 +752,6 @@ const MenuDetailsDialog: React.FC<MenuDetailsDialogProps> = ({
                                                       item,
                                                     },
                                                   })
-                                                  if (item.isObligatory) {
-                                                    setObligatoryLength(obligatoryLength - 1)
-                                                  }
-                                                }
                                                 }
                                                 disabled={
                                                   !(
@@ -825,7 +795,7 @@ const MenuDetailsDialog: React.FC<MenuDetailsDialogProps> = ({
                                       <Grid item>
                                         <MiniFab
                                           color="primary"
-                                          onClick={() => {
+                                          onClick={() =>
                                             dispatch({
                                               type: 'increment_option_item',
                                               payload: {
@@ -834,11 +804,6 @@ const MenuDetailsDialog: React.FC<MenuDetailsDialogProps> = ({
                                                 item,
                                               },
                                             })
-                                            console.log(option)
-                                            if (item.isObligatory) {
-                                              setObligatoryLength(obligatoryLength + 1)
-                                            }
-                                          }
                                           }
                                           disabled={
                                             (options &&
@@ -868,7 +833,7 @@ const MenuDetailsDialog: React.FC<MenuDetailsDialogProps> = ({
             </React.Fragment>
           ))}
       </DialogContent>
-      {checkIfAllObligatoryIsSelected() && quantity !== 0 && <DialogActions className={classes.dialogActions}>
+      {quantity !== 0 && <DialogActions className={classes.dialogActions}>
         <div className={classes.controls}>
           <Fab
             size="medium"

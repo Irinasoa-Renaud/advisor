@@ -1890,6 +1890,8 @@ const Checkout: React.FC<CheckoutProps> = ({
         <PlatRecommander
           clsx={clsx}
           Link={Link}
+          title="Plats recommander"
+
         />
       </div>
       <Footer mini />

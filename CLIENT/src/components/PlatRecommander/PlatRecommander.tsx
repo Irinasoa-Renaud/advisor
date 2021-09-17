@@ -23,9 +23,15 @@ import {
     useMediaQuery,
 } from '@material-ui/core';
 
+interface IPlatRecommander {
+    clsx: any;
+    Link: any;
+    title: string;
+}
 
-const PlatRecommander: React.FC<any> = ({ clsx, Link }) => {
+const PlatRecommander: React.FC<any> = (props) => {
 
+    const { clsx, Link, title } = props as IPlatRecommander;
     const { enqueueSnackbar } = useSnackbar();
     const classes = useStyles();
 
@@ -110,7 +116,7 @@ const PlatRecommander: React.FC<any> = ({ clsx, Link }) => {
                     align="left"
                     className={clsx(classes.title, 'translate')}
                 >
-                    Plats populaires
+                    {title}
                 </Typography>
                 <div className={classes.sliderControls}>
                     <Typography

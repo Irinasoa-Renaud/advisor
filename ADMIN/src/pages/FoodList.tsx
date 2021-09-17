@@ -280,6 +280,12 @@ const FoodListPage: React.FC = () => {
                 label: 'Attributs',
                 type: 'ATTRIBUTES',
               },
+              {
+                id: 'allergene',
+                label: 'Allergène',
+                type: 'ALLERGENE',
+              },
+
             ],
             selectOnClick: false,
             onRowClick: (_, food) => showModification(food),

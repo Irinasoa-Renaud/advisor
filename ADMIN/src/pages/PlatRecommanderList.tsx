@@ -72,7 +72,12 @@ const PlatRecommanderListPage: React.FC = () => {
     const filter = (isRestaurantAdmin && restaurant) ? { restaurant: restaurant._id } : undefined
     getPlatRecommander(filter)
       .then((data) => {
-        setRecords(data);
+        setRecords(data.map((item: any) => {
+          return {
+            ...item,
+            restaurant: item.food.restaurant
+          }
+        }));
       })
       .catch(() => {
         enqueueSnackbar('Erreur lors du chargement...', { variant: 'error' });
@@ -180,7 +185,13 @@ const PlatRecommanderListPage: React.FC = () => {
             order: 'asc',
             enableDragAndDrop: true,
             hasActionsColumn: true,
-            filters: [],
+            filters: [
+              {
+                id: 'restaurant',
+                label: 'Restaurant',
+                type: 'RESTAURANT',
+                alwaysOn: true
+              }],
             onDragEnd: (source, destination) =>
               setRecords((records) => {
                 const p1 = source.priority,
@@ -216,18 +227,19 @@ const PlatRecommanderListPage: React.FC = () => {
             const {
               _id,
               food,
+              restaurant
             } = recommandedFood as any;
             return (
               <React.Fragment key={_id}>
                 <TableCell>{food?.name.fr}</TableCell>
-                <TableCell>{food?.restaurant?.name}</TableCell>
+                <TableCell>{restaurant?.name}</TableCell>
                 <TableCell>
-                  <EditButton
+                  {/* <EditButton
                     onClick={(e) => {
                       e.stopPropagation();
                       showModification(recommandedFood);
                     }}
-                  />
+                  /> */}
                   <DeleteButton
                     onClick={(e) => {
                       e.stopPropagation();

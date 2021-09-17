@@ -48,11 +48,6 @@ const headCells: HeadCell<Restaurant>[] = [
     disableSorting: true,
   },
   {
-    id: 'fixedLinePhoneNumber',
-    label: 'Téléphone fixe',
-    disableSorting: true,
-  },
-  {
     id: 'city',
     label: 'Ville',
     disableSorting: true,
@@ -414,8 +409,7 @@ const RestaurantListPage: React.FC = () => {
             return (
               <React.Fragment key={_id}>
                 <TableCell>{name}</TableCell>
-                <TableCell>{phoneNumber}</TableCell>
-                <TableCell>{fixedLinePhoneNumber}</TableCell>
+                <TableCell>{phoneNumber}<br />{fixedLinePhoneNumber}</TableCell>
                 <TableCell>{city}</TableCell>
                 <TableCell>{postalCode}</TableCell>
                 <TableCell>{`${admin.name.last} ${admin.name.first}`}</TableCell>
@@ -508,9 +502,6 @@ const RestaurantListPage: React.FC = () => {
         }}
         open={openForm}
       >
-
-
-
         <RestaurantForm
           initialValues={modif.current}
           modification={!!modif.current}

@@ -125,11 +125,17 @@ function applyFilters<T extends { [key: string]: any }>(
           return p && new RegExp(filter.category || '', 'i').test(newComparedValue);
         }
         else if (Object.keys(filter).includes('restaurant')) {
+
+
           return p && new RegExp(filter.restaurant || '', 'i').test(valueToBeCompared?.name);
         }
         else if (Object.keys(filter).includes('attributes')) {
           const newComparedValue = valueToBeCompared.map((k: any) => k.tag)
           return p && new RegExp(filter.attributes || '', 'i').test(newComparedValue);
+        }
+        else if (Object.keys(filter).includes('allergene')) {
+          const newComparedValue = valueToBeCompared.map((k: any) => k.tag)
+          return p && new RegExp(filter.allergene || '', 'i').test(newComparedValue);
         }
       }
 
@@ -310,17 +316,17 @@ export default function TableContainer<T extends { _id: string }>(
     [selected],
   );
 
-  const onFilterValuesChange: (id: string, value: FilterValue) => void = (
+  const onFilterValuesChange: (id: string, value: FilterValue | any) => void = (
     id,
     value,
   ) => {
-
 
     if (setArraySelected) {
       setArraySelected(value as any);
     }
 
     setFilterValues((v) => ({ ...v, [id]: value }));
+
   };
 
   const onDragEnd = useCallback<

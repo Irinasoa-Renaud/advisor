@@ -114,9 +114,9 @@ interface SearchStateProps {
   lang: Lang;
 }
 
-interface SearchDispatchProps {}
+interface SearchDispatchProps { }
 
-interface SearchOwnProps {}
+interface SearchOwnProps { }
 
 type SearchProps = SearchStateProps & SearchDispatchProps & SearchOwnProps;
 
@@ -141,6 +141,9 @@ const Search: React.FC<SearchProps> = ({ lang }) => {
   const [searchAttributes, setSearchAttributes] = useState<string[]>(
     attributes as string[]
   );
+
+  const [searchAllergene, setSearchAllergene] = useState<string[]>([]);
+
   const [filter, setFilter] = useState<any>([]);
 
   const [openSortPanel, setOpenSortPanel] = useState<boolean>(true);
@@ -165,23 +168,47 @@ const Search: React.FC<SearchProps> = ({ lang }) => {
 
     cancelToken.current = Axios.CancelToken.source();
 
-    search(Object.assign({}, 
+    search(Object.assign({},
       {
         lang,
         query: (q as string) || '',
         type: searchType,
         cancelToken: cancelToken.current.token,
-      }, 
-      filter && {filter: JSON.stringify(
-        Object.assign({}, {}, filter.length > 0 && {category: filter}, searchAttributes[0] && {attributes: searchAttributes})
-      )}
+      },
+      filter && {
+        filter: JSON.stringify(
+          Object.assign({}, {}, filter.length > 0 && { category: filter }, searchAttributes[0] && { attributes: searchAttributes })
+        )
+      }
     )).then((datas) => {
-      setFoods(
-        (datas.filter(({ type }) => type === 'food') as {
-          type: 'food';
-          content: Food;
-        }[]).map(({ content }) => content).sort((a, b) => a.priority - b.priority)
-      );
+
+      const foodsFilter = (datas.filter(({ type }) => type === 'food') as {
+        type: 'food';
+        content: Food;
+      }[]).map(({ content }) => content).sort((a, b) => a.priority - b.priority)
+
+      const foodsnotAlergene: any[] = [];
+
+      foodsFilter.forEach((food: any) => {
+
+        if (food.allergene.length > 0 && searchAttributes.length > 0) {
+
+          food.allergene.forEach((item: any) => {
+
+            if (searchAttributes.includes(item._id)) {
+              console.log("allergene ")
+            }
+
+          })
+
+        } else {
+          foodsnotAlergene.push(food)
+        }
+
+      });
+
+      setFoods(foodsnotAlergene)
+
       setRestaurants(
         (datas.filter(({ type }) => type === 'restaurant') as {
           type: 'restaurant';
@@ -225,247 +252,248 @@ const Search: React.FC<SearchProps> = ({ lang }) => {
       <Navbar />
       <Container maxWidth="xl" className={classes.root}>
         <Grid container spacing={2}>
-            <Grid
-              item
-              container
-              lg={3}
-              md={4}
-              sm={12}
-              style={{ position: 'relative' }}
-              className={clsx(classes.searchOptions)}
-            >
-              <div style={{width: '100%'}}>
-                <Grid
-                  container
-                  justify="space-between"
-                  alignItems="center"
-                  className={classes.searchOptionHead}
-                >
-                  <Typography variant="h6" component="p" className="translate">
-                    Trier par
-                  </Typography>
-                  <div>
-                    <IconButton
-                      onClick={() => setOpenSortPanel(!openSortPanel)}
-                    >
-                      {openSortPanel ? <ArrowDropUp /> : <ArrowDropDown />}
-                    </IconButton>
-                  </div>
-                </Grid>
-                {openSortPanel && (
-                  <>
-                    <RadioGroup
-                      name="sort"
-                      value={sort}
-                      onChange={(_, value) => setSort(value)}
-                    >
-                      <FormControlLabel
-                        control={<Radio value="popularity" />}
-                        label="Popularité"
-                        className={classes.formControl}
-                      />
-                      <FormControlLabel
-                        control={<Radio value="notes" />}
-                        label="Note"
-                        className={classes.formControl}
-                      />
-                    </RadioGroup>
-                  </>
-                )}
-                <Grid
-                  container
-                  justify="space-between"
-                  alignItems="center"
-                  className={classes.searchOptionHead}
-                >
-                  <Typography variant="h6" component="p" className="translate">
-                    Type de recherche
-                  </Typography>
-                  <div>
-                    <IconButton
-                      onClick={() => setOpenTypePanel(!openTypePanel)}
-                    >
-                      {openTypePanel ? <ArrowDropUp /> : <ArrowDropDown />}
-                    </IconButton>
-                  </div>
-                </Grid>
-                {openTypePanel && (
-                  <>
-                    <RadioGroup
-                      name="type"
-                      value={searchType}
-                      onChange={(_, value) => {
-                        if (value !== 'food') setSearchAttributes([]);
+          <Grid
+            item
+            container
+            lg={3}
+            md={4}
+            sm={12}
+            style={{ position: 'relative' }}
+            className={clsx(classes.searchOptions)}
+          >
+            <div style={{ width: '100%' }}>
+              <Grid
+                container
+                justify="space-between"
+                alignItems="center"
+                className={classes.searchOptionHead}
+              >
+                <Typography variant="h6" component="p" className="translate">
+                  Trier par
+                </Typography>
+                <div>
+                  <IconButton
+                    onClick={() => setOpenSortPanel(!openSortPanel)}
+                  >
+                    {openSortPanel ? <ArrowDropUp /> : <ArrowDropDown />}
+                  </IconButton>
+                </div>
+              </Grid>
+              {openSortPanel && (
+                <>
+                  <RadioGroup
+                    name="sort"
+                    value={sort}
+                    onChange={(_, value) => setSort(value)}
+                  >
+                    <FormControlLabel
+                      control={<Radio value="popularity" />}
+                      label="Popularité"
+                      className={classes.formControl}
+                    />
+                    <FormControlLabel
+                      control={<Radio value="notes" />}
+                      label="Note"
+                      className={classes.formControl}
+                    />
+                  </RadioGroup>
+                </>
+              )}
+              <Grid
+                container
+                justify="space-between"
+                alignItems="center"
+                className={classes.searchOptionHead}
+              >
+                <Typography variant="h6" component="p" className="translate">
+                  Type de recherche
+                </Typography>
+                <div>
+                  <IconButton
+                    onClick={() => setOpenTypePanel(!openTypePanel)}
+                  >
+                    {openTypePanel ? <ArrowDropUp /> : <ArrowDropDown />}
+                  </IconButton>
+                </div>
+              </Grid>
+              {openTypePanel && (
+                <>
+                  <RadioGroup
+                    name="type"
+                    value={searchType}
+                    onChange={(_, value) => {
+                      if (value !== 'food') setSearchAttributes([]);
 
-                        setSearchType(value);
-                      }}
-                    >
-                      <FormControlLabel
-                        control={<Radio value="all" />}
-                        label={"Tous"}
-                        className={clsx(classes.formControl, 'translate')}
-                      />
-                      <FormControlLabel
-                        control={<Radio value="food" />}
-                        label={"Plat"}
-                        className={clsx(classes.formControl, 'translate')}
-                      />
-                      <FormControlLabel
-                        control={<Radio value="restaurant" />}
-                        label={"Restaurants"}
-                        className={clsx(classes.formControl, 'translate')}
-                      />
-                    </RadioGroup>
-                  </>
-                )}
-                {searchType === 'food' && (
-                  <>
-                    <Grid
-                      container
-                      justify="space-between"
-                      alignItems="center"
-                      className={classes.searchOptionHead}
-                    >
-                      <Typography variant="h6" component="p" className="translate">
-                        Attributs
-                      </Typography>
-                      <div>
-                        <IconButton
-                          onClick={() =>
-                            setOpenAttributePanel(!openAttributePanel)
-                          }
-                        >
-                          {openAttributePanel ? (
-                            <ArrowDropUp />
-                          ) : (
-                            <ArrowDropDown />
-                          )}
-                        </IconButton>
-                      </div>
-                    </Grid>
-                    {openAttributePanel &&
-                      (loadingFoodAttributes ? (
-                        <Grid
-                          container
-                          justify="center"
-                          alignItems="center"
-                          style={{ height: 100, margin: theme.spacing(0, 2) }}
-                        >
-                          <CircularProgress />
-                        </Grid>
-                      ) : (
-                        <Grid
-                          container
-                          spacing={1}
-                          style={{ padding: theme.spacing(0, 2) }}
-                        >
-                          {foodAttributes.map(({ imageURL, tag, locales, _id }) => (
-                            <Grid item>
-                              <Chip
-                                avatar={<Avatar src={imageURL} alt={tag} />}
-                                label={locales.fr || tag}
-                                color={
-                                  searchAttributes.indexOf(_id) >= 0
-                                    ? 'primary'
-                                    : undefined
+                      setSearchType(value);
+                    }}
+                  >
+                    <FormControlLabel
+                      control={<Radio value="all" />}
+                      label={"Tous"}
+                      className={clsx(classes.formControl, 'translate')}
+                    />
+                    <FormControlLabel
+                      control={<Radio value="food" />}
+                      label={"Plat"}
+                      className={clsx(classes.formControl, 'translate')}
+                    />
+                    <FormControlLabel
+                      control={<Radio value="restaurant" />}
+                      label={"Restaurants"}
+                      className={clsx(classes.formControl, 'translate')}
+                    />
+                  </RadioGroup>
+                </>
+              )}
+              {searchType === 'food' && (
+                <>
+                  <Grid
+                    container
+                    justify="space-between"
+                    alignItems="center"
+                    className={classes.searchOptionHead}
+                  >
+                    <Typography variant="h6" component="p" className="translate">
+                      Attributs
+                    </Typography>
+                    <div>
+                      <IconButton
+                        onClick={() =>
+                          setOpenAttributePanel(!openAttributePanel)
+                        }
+                      >
+                        {openAttributePanel ? (
+                          <ArrowDropUp />
+                        ) : (
+                          <ArrowDropDown />
+                        )}
+                      </IconButton>
+                    </div>
+                  </Grid>
+                  {openAttributePanel &&
+                    (loadingFoodAttributes ? (
+                      <Grid
+                        container
+                        justify="center"
+                        alignItems="center"
+                        style={{ height: 100, margin: theme.spacing(0, 2) }}
+                      >
+                        <CircularProgress />
+                      </Grid>
+                    ) : (
+                      <Grid
+                        container
+                        spacing={1}
+                        style={{ padding: theme.spacing(0, 2) }}
+                      >
+                        {foodAttributes.map(({ imageURL, tag, locales, _id }) => (
+                          <Grid item>
+                            <Chip
+                              avatar={<Avatar src={imageURL} alt={tag} />}
+                              label={locales.fr || tag}
+                              color={
+                                searchAttributes.indexOf(_id) >= 0
+                                  ? 'primary'
+                                  : undefined
+                              }
+                              onClick={() => {
+                                if (searchAttributes.indexOf(_id) < 0) {
+                                  setSearchAttributes([
+                                    ...searchAttributes,
+                                    _id,
+                                  ]);
                                 }
-                                onClick={() => {
-                                  if (searchAttributes.indexOf(_id) < 0)
-                                    setSearchAttributes([
-                                      ...searchAttributes,
-                                      _id,
-                                    ]);
-                                }}
-                                onDelete={
-                                  searchAttributes.indexOf(_id) >= 0
-                                    ? function () {
-                                        setSearchAttributes(
-                                          searchAttributes.filter(
-                                            (e) => e !== _id
-                                          )
-                                        );
-                                      }
-                                    : undefined
-                                }
-                              />
-                            </Grid>
-                          ))}
-                        </Grid>
-                      ))}
-                  </>
-                )}
-                {searchType === 'restaurant' && (
-                  <>
-                    <Grid
-                      container
-                      justify="space-between"
-                      alignItems="center"
-                      className={classes.searchOptionHead}
-                    >
-                      <Typography variant="h6" component="p" className="translate">
-                        Catégories
-                      </Typography>
-                      <div>
-                        <IconButton
-                          onClick={() =>
-                            setOpenCategoriesPanel(!openCategoriesPanel)
-                          }
-                        >
-                          {openCategoriesPanel ? (
-                            <ArrowDropUp />
-                          ) : (
-                            <ArrowDropDown />
-                          )}
-                        </IconButton>
-                      </div>
-                    </Grid>
-                    {openCategoriesPanel &&
-                      (loadingFoodCategories ? (
-                        <Grid
-                          container
-                          justify="center"
-                          alignItems="center"
-                          style={{ height: 100, margin: theme.spacing(0, 2) }}
-                        >
-                          <CircularProgress />
-                        </Grid>
-                      ) : (
-                        <Grid
-                          container
-                          spacing={1}
-                          style={{ padding: theme.spacing(0, 2) }}
-                        >
-                          {foodCategories.map(({ imageURL, name, _id }) => (
-                            <Grid item>
-                              <Chip
-                                avatar={<Avatar src={imageURL} alt={name.fr} />}
-                                label={name.fr}
-                                color={
-                                  filter?.indexOf(_id) >= 0
-                                    ? 'primary'
-                                    : undefined
-                                }
-                                onClick={() => updateFilter(_id)}
-                                onDelete={
-                                  filter?.indexOf(_id) >= 0
-                                    ? function () {
-                                        setFilter(
-                                          filter?.filter(
-                                            (e: any) => e !== _id
-                                          )
-                                        );
-                                      }
-                                    : undefined
-                                }
-                              />
-                            </Grid>
-                          ))}
-                        </Grid>
-                      ))}
-                  </>
-                )}
-              </div>
-            </Grid>
+                              }}
+                              onDelete={
+                                searchAttributes.indexOf(_id) >= 0
+                                  ? function () {
+                                    setSearchAttributes(
+                                      searchAttributes.filter(
+                                        (e) => e !== _id
+                                      )
+                                    );
+                                  }
+                                  : undefined
+                              }
+                            />
+                          </Grid>
+                        ))}
+                      </Grid>
+                    ))}
+                </>
+              )}
+              {searchType === 'restaurant' && (
+                <>
+                  <Grid
+                    container
+                    justify="space-between"
+                    alignItems="center"
+                    className={classes.searchOptionHead}
+                  >
+                    <Typography variant="h6" component="p" className="translate">
+                      Catégories
+                    </Typography>
+                    <div>
+                      <IconButton
+                        onClick={() =>
+                          setOpenCategoriesPanel(!openCategoriesPanel)
+                        }
+                      >
+                        {openCategoriesPanel ? (
+                          <ArrowDropUp />
+                        ) : (
+                          <ArrowDropDown />
+                        )}
+                      </IconButton>
+                    </div>
+                  </Grid>
+                  {openCategoriesPanel &&
+                    (loadingFoodCategories ? (
+                      <Grid
+                        container
+                        justify="center"
+                        alignItems="center"
+                        style={{ height: 100, margin: theme.spacing(0, 2) }}
+                      >
+                        <CircularProgress />
+                      </Grid>
+                    ) : (
+                      <Grid
+                        container
+                        spacing={1}
+                        style={{ padding: theme.spacing(0, 2) }}
+                      >
+                        {foodCategories.map(({ imageURL, name, _id }) => (
+                          <Grid item>
+                            <Chip
+                              avatar={<Avatar src={imageURL} alt={name.fr} />}
+                              label={name.fr}
+                              color={
+                                filter?.indexOf(_id) >= 0
+                                  ? 'primary'
+                                  : undefined
+                              }
+                              onClick={() => updateFilter(_id)}
+                              onDelete={
+                                filter?.indexOf(_id) >= 0
+                                  ? function () {
+                                    setFilter(
+                                      filter?.filter(
+                                        (e: any) => e !== _id
+                                      )
+                                    );
+                                  }
+                                  : undefined
+                              }
+                            />
+                          </Grid>
+                        ))}
+                      </Grid>
+                    ))}
+                </>
+              )}
+            </div>
+          </Grid>
           <Grid item xs>
             {loading ? (
               <Grid
