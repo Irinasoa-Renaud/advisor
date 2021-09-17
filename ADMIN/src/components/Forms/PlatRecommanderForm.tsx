@@ -139,9 +139,6 @@ const PlatRecommanderForm: React.FC<PlatRecommandedFormProps> = ({
               Plat recommander
             </Typography>
 
-            {console.log("foods", foods)}
-            {console.log("records", records)}
-
             <Autocomplete
               loadingText="Chargement"
               noOptionsText="Aucun Plat disponible"

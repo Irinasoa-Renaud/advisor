@@ -205,6 +205,15 @@ const Checkout: React.FC<CheckoutProps> = ({
     priceType: price
   }))
 
+  useEffect(() => {
+    if (
+      (menus.length === 0) &&
+      (foods.length === 0)
+    ) {
+      history.push('/home')
+    }
+  })
+
   const [commandType, setCommandType] = useState<CommandType>(() =>
     authenticated && restaurant && restaurant.delivery && priceType !== 'priceless' && menus.findIndex(({ item: { type } }) => type === 'priceless') === -1
       ? 'delivery'

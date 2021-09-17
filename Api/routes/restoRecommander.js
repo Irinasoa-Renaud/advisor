@@ -6,133 +6,134 @@ const { RestoRecommander } = require('../models');
 const { allAdminGuard } = require('../middlewares/token');
 const { parse } = require('../utils/request');
 const {
-  getNextSequenceValue,
-  decrementSequenceValue,
-  getCurrentSequenceValue,
-  resetSequenceValue,
+    getNextSequenceValue,
+    decrementSequenceValue,
+    getCurrentSequenceValue,
+    resetSequenceValue,
 } = require('../utils/counter');
 
-router.get('/', async function (req, res) {
-  const { lang, limit, offset, filter } = req.query;
+router.get('/', async function(req, res) {
+    const { lang, limit, offset, filter } = req.query;
 
-  try {
-    const foodTypeDocuments = RestoRecommander.find(JSON.parse(filter || '{}'));
+    try {
+        const foodTypeDocuments = RestoRecommander.find(JSON.parse(filter || '{}'));
 
-    if (limit) foodTypeDocuments.limit(limit);
+        if (limit) foodTypeDocuments.limit(limit);
 
-    if (offset) foodTypeDocuments.skip(offset);
+        if (offset) foodTypeDocuments.skip(offset);
 
-    let foodTypes = (await foodTypeDocuments.populate('restaurant')).map((e) =>
-      e.toJSON(),
-    );
+        let foodTypes = (await foodTypeDocuments.populate('restaurant')).map((e) =>
+            e.toJSON(),
+        );
 
-    res.json(foodTypes);
-  } catch (error) {
-    res.status(INTERNAL_SERVER_ERROR);
+        res.json(foodTypes);
+    } catch (error) {
+        res.status(INTERNAL_SERVER_ERROR);
 
-    if (process.env.NODE_ENV === 'development') {
-      console.error(error);
-      res.json(error);
+        if (process.env.NODE_ENV === 'development') {
+            console.error(error);
+            res.json(error);
+        }
     }
-  }
 });
 
-router.get('/:id', async function (req, res, next) {
-  const { id } = req.params;
+router.get('/:id', async function(req, res, next) {
+    const { id } = req.params;
 
-  try {
-    let foodType = (
-      await RestoRecommander.findById(id).populate('restaurant')
-    ).toJSON();
+    try {
+        let foodType = (
+            await RestoRecommander.findById(id).populate('restaurant')
+        ).toJSON();
 
-    res.json(foodType);
-  } catch (error) {
-    res.status(INTERNAL_SERVER_ERROR);
+        res.json(foodType);
+    } catch (error) {
+        res.status(INTERNAL_SERVER_ERROR);
 
-    if (process.env.NODE_ENV === 'development') {
-      console.error(error);
-      res.json(error);
+        if (process.env.NODE_ENV === 'development') {
+            console.error(error);
+            res.json(error);
+        }
     }
-  }
 });
 
-router.post('/', allAdminGuard, async function (req, res) {
-  const data = parse(req.body);
+router.post('/', allAdminGuard, async function(req, res) {
 
-  if (!data)
-    res
-      .status(BAD_REQUEST)
-      .json({ message: 'You need to provide the data for the new food type' });
+    const data = req.body.restaurant;
 
-  const newFoodType = new RestoRecommander({
-    ...data,
-    priority: await getNextSequenceValue('restoRecommanderPriority'),
-  });
-  try {
-    await newFoodType.save({
-      validateBeforeSave: true,
-    });
-
-    res.json(newFoodType.toJSON());
-  } catch (error) {
-    res.status(INTERNAL_SERVER_ERROR);
-
-    if (process.env.NODE_ENV === 'development') {
-      console.error(error);
-      res.json(error);
+    if (!data) {
+        res.status(BAD_REQUEST).json({ message: 'You need to provide the data for the new food type' });
     }
-  }
+
+    try {
+
+        for (var i = 0; i < data.length; i++) {
+            await RestoRecommander.create({
+                restaurant: data[i],
+                priority: await getNextSequenceValue('restoRecommanderPriority')
+            })
+        }
+
+        res.status(200).send('success');
+
+    } catch (error) {
+        res.status(INTERNAL_SERVER_ERROR);
+
+        if (process.env.NODE_ENV === 'development') {
+            console.error(error);
+            res.json(error);
+        }
+    }
 });
 
-router.put('/:id', allAdminGuard, async function (req, res) {
-  const { id: _id } = req.params;
-  const data = parse(req.body);
+router.put('/:id', allAdminGuard, async function(req, res) {
+    const { id: _id } = req.params;
+    const data = parse(req.body);
 
-  if (!data)
-    return res
-      .status(BAD_REQUEST)
-      .send({ message: 'Data not provided in request body' });
+    if (!data)
+        return res
+            .status(BAD_REQUEST)
+            .send({ message: 'Data not provided in request body' });
 
-  try {
-    await RestoRecommander.updateOne({ _id }, data);
+    try {
+        await RestoRecommander.updateOne({ _id }, data);
 
-    res.json({ message: 'Food type successfully updated' });
-  } catch (error) {
-    res.status(INTERNAL_SERVER_ERROR);
+        res.json({ message: 'Food type successfully updated' });
+    } catch (error) {
+        res.status(INTERNAL_SERVER_ERROR);
 
-    if (process.env.NODE_ENV === 'development') {
-      console.error(error);
-      res.json(error);
+        if (process.env.NODE_ENV === 'development') {
+            console.error(error);
+            res.json(error);
+        }
     }
-  }
 });
 
-router.delete('/:id', allAdminGuard, async function (req, res) {
-  const { id } = req.params;
+router.delete('/:id', allAdminGuard, async function(req, res) {
+    const { id } = req.params;
 
-  try {
-    const foodType = await RestoRecommander.findById(id);
+    try {
+        const foodType = await RestoRecommander.findById(id);
 
-    if (
-      foodType.priority ===
-      (await getCurrentSequenceValue('restoRecommanderPriority'))
-    )
-      await decrementSequenceValue('restoRecommanderPriority');
+        if (
+            foodType.priority ===
+            (await getCurrentSequenceValue('restoRecommanderPriority'))
+        )
+            await decrementSequenceValue('restoRecommanderPriority');
 
-    const result = await RestoRecommander.remove({ _id: id });
+        const result = await RestoRecommander.remove({ _id: id });
 
-    if (!(await RestoRecommander.count()))
-      resetSequenceValue('restoRecommanderPriority');
+        if (!(await RestoRecommander.count()))
+            resetSequenceValue('restoRecommanderPriority');
 
-    res.json(result);
-  } catch (error) {
-    res.status(INTERNAL_SERVER_ERROR);
+        res.json(result);
+    } catch (error) {
+        res.status(INTERNAL_SERVER_ERROR);
 
-    if (process.env.NODE_ENV === 'development') {
-      console.error(error);
-      res.json(error);
+        if (process.env.NODE_ENV === 'development') {
+            console.error(error);
+            res.json(error);
+        }
     }
-  }
 });
 
 module.exports = router;

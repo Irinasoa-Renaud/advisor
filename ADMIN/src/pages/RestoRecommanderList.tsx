@@ -120,19 +120,21 @@ const RestoRecommanderListPage: React.FC = () => {
     [enqueueSnackbar],
   );
 
-  const showModification = useCallback((foodType: RestoRecommander) => {
-    const {
-      _id,
-      priority,
-      restaurant
-    } = foodType;
 
-    modif.current = {
-      _id,
-      priority,
-      restaurant,
-    };
-    setOpenForm(true);
+  const showModification = useCallback((foodType: RestoRecommander) => {
+    return
+    // const {
+    //   _id,
+    //   priority,
+    //   restaurant
+    // } = foodType;
+
+    // modif.current = {
+    //   _id,
+    //   priority,
+    //   restaurant,
+    // };
+    // setOpenForm(true);
   }, []);
 
   useEffect(() => {
@@ -222,12 +224,6 @@ const RestoRecommanderListPage: React.FC = () => {
               <React.Fragment key={_id}>
                 <TableCell>{restaurant?.name}</TableCell>
                 <TableCell>
-                  <EditButton
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      showModification(foodType);
-                    }}
-                  />
                   <DeleteButton
                     onClick={(e) => {
                       e.stopPropagation();
@@ -256,6 +252,7 @@ const RestoRecommanderListPage: React.FC = () => {
         open={openForm}
       >
         <RestoRecommanderForm
+          records={records}
           initialValues={modif.current}
           isUpdate={modif.current ? true : false}
           saving={saving}
