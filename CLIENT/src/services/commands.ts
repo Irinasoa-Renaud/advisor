@@ -6,7 +6,6 @@ export const commands: (
   confirmationCode?: string
 ) => Promise<Command> = async (data) => {
   const res = await Api.post<Command>('/commands', data);
-
   return res.data;
 };
 
@@ -20,11 +19,10 @@ export const getCommandsOfUser: (params: {
   limit?: number;
   offset?: number;
 }) => Promise<Command[]> = ({ relatedUser, commandType, limit, offset }) =>
-  Api.get(
-    `/commands?filter=${JSON.stringify({ relatedUser, commandType })}${
-      limit ? '&limit=' + limit : ''
-    }${offset ? '&offset=' + offset : ''}`
-  ).then(({ data }) => data);
+    Api.get(
+      `/commands?filter=${JSON.stringify({ relatedUser, commandType })}${limit ? '&limit=' + limit : ''
+      }${offset ? '&offset=' + offset : ''}`
+    ).then(({ data }) => data);
 
 export const sendCode: (data: {
   commandType: string;

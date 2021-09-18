@@ -14,6 +14,7 @@ import { Box, CircularProgress } from '@material-ui/core';
 import { useHistory } from 'react-router-dom';
 import clsx from 'clsx';
 import { useTypographyStyles } from '../../hooks/styles';
+import { useSnackbar } from 'notistack';
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -57,39 +58,52 @@ const RegisterPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
 
   const history = useHistory();
+  const { enqueueSnackbar } = useSnackbar();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+
     event.preventDefault();
 
-    setLoading(true);
-    register({
-      phoneNumber,
-      email,
-      password,
-      name: {
-        first: firstName,
-        last: lastName,
-      },
-    })
-      .then((data) => {
-        setLoading(false);
+    try {
 
-        if (data) {
-          history.push(`/confirm-register?token=${data.token}`);
-        }
+      setLoading(true);
+
+      const { data: data } = await register({
+        phoneNumber,
+        email,
+        password,
+        name: {
+          first: firstName,
+          last: lastName,
+        },
       })
-      .catch(() => {
-        setLoading(false);
+
+      if (data) {
+        history.push(`/confirm-register?token=${data.token}`);
+      }
+
+    }
+    catch (err) {
+      enqueueSnackbar(`Le mail ou Téléphone est deja utilisé`, {
+        variant: 'error',
       });
+
+    }
+    finally {
+
+      setLoading(false);
+
+    }
+
   };
 
   const validated = Boolean(
     firstName.length &&
-      lastName.length &&
-      password.length &&
-      confirmPassword === password &&
-      email.length &&
-      phoneNumber.length
+    lastName.length &&
+    password.length &&
+    confirmPassword === password &&
+    email.length &&
+    phoneNumber.length
   );
 
   return (

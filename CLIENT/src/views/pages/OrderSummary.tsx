@@ -64,21 +64,25 @@ const useStyles = makeStyles((theme) => ({
 
 export interface OrderSummaryProps extends CartState {
   code: number;
-  commandType: CommandType;
+  commandType: any;
   validated: boolean;
   revoked: boolean;
   comment: string;
   shippingTime: Date;
+  priceLivraison: any;
+
 }
 
 const OrderSummary: React.FC<OrderSummaryProps> = ({
   children,
+  priceLivraison,
   ...command
 }) => {
   const classes = useStyles();
 
   const theme = useTheme();
 
+  console.log("priceLivraison", priceLivraison)
   if (!command) return <Redirect to="/home" />;
 
   return (
@@ -505,13 +509,15 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
             </>
           )}
 
+          {console.log("command", command)}
+
           {command.commandType === 'delivery' && (<Grid container justify="space-between" alignItems="center">
             <Grid item>
               <Typography className="translate">Frais de livraison</Typography>
             </Grid>
             <Grid item>
               <Typography>{`€${(
-                (command.restaurant?.deliveryPrice?.amount || 0) / 100
+                (priceLivraison  || 0)
               ).toLocaleString(undefined, {
                 minimumFractionDigits: 1,
               })}`}</Typography>

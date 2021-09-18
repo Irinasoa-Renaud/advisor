@@ -387,9 +387,6 @@ router.post('/register', async function(req, res) {
         roles = ['ROLE_USER'],
     } = req.body;
 
-
-    console.log("req", req.body);
-
     if (!email || !password || !phoneNumber)
         return res.status(BAD_REQUEST).json({
             message: 'Missing credentials',
@@ -420,10 +417,11 @@ router.post('/register', async function(req, res) {
             phoneNumber,
             validated: true,
         }));
+
         const alreadyInUse = emailAlreadyInUse || phoneNumberAlreadyInUse;
 
         if (alreadyInUse)
-            return res.status(CONFLICT).json({
+            return res.status(500).json({
                 message: 'One or more provided informations are already in use with another user',
                 details: {
                     email: emailAlreadyInUse ? 'Email is already in use' : undefined,
@@ -454,16 +452,17 @@ router.post('/register', async function(req, res) {
 
         if (!roles.includes('ROLE_ADMIN') &&
             !roles.includes('ROLE_RESTAURANT_ADMIN')
-        )
-            sendConfirmationCode(
+        ) {
+
+            return sendConfirmationCode(
                 req,
                 res,
                 createdUser.id,
                 'register',
                 createdUser.phoneNumber,
             );
+        }
 
-        res.send("SUCCESS ")
     } catch (error) {
         res.status(INTERNAL_SERVER_ERROR);
 
@@ -656,6 +655,7 @@ const sendConfirmationCode = async function(
     } est: ${code}. Ce code n'est valable que pendant 5 minutes.`;
 
     try {
+
         await sendMessage('Menu advisor', phoneNumber, text);
 
         await ConfirmationCode.deleteMany({
@@ -672,7 +672,9 @@ const sendConfirmationCode = async function(
         await confirmationCode.save();
 
         const token = jwt.sign({ id: userId, type }, process.env.SECRET_KEY);
-        res.json({ status: 'success', token });
+
+        return res.json({ status: 'success', token });
+
     } catch (error) {
         res.status(INTERNAL_SERVER_ERROR);
 

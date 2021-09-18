@@ -12,9 +12,9 @@ export interface Customer {
 
 export type PaymentStatus =
   | {
-      status: boolean;
-      paymentChargeId: string;
-    }
+    status: boolean;
+    paymentChargeId: string;
+  }
   | { status: boolean; paymentIntentId: string };
 
 export interface MenuInCommand {
@@ -52,6 +52,7 @@ export interface Command {
   _id?: string;
   comment?: string;
   relatedUser?: string;
+  priceLivraison?: number;
   code?: number;
   optionLivraison?: DeliveryOption;
   etage?: number;

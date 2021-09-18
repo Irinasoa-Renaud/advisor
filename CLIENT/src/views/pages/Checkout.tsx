@@ -295,6 +295,7 @@ const Checkout: React.FC<CheckoutProps> = ({
   const [openDialog, setopenDialog] = useState<boolean>(false);
   const [sendingConfirmationCode, setSendingConfirmationCode] = useState(false);
   const [confirmationCode, setConfirmationCode] = useState('');
+  const [blockDelivery, setblockDelivery] = useState(false);
 
   const [activeStep, setActiveStep] = useState(0);
 
@@ -304,9 +305,7 @@ const Checkout: React.FC<CheckoutProps> = ({
 
   const [inProgress, setInProgress] = useState(false);
 
-  const [otherFees, setOtherFees] = useState<number>(
-    (restaurant?.deliveryPrice?.amount || 0) / 100
-  );
+  const [otherFees, setOtherFees] = useState<number>((restaurant?.deliveryPrice?.amount || 0) / 100);
 
   const [openPayementType, setOpentPayementType] = useState(false);
 
@@ -314,10 +313,10 @@ const Checkout: React.FC<CheckoutProps> = ({
     if (commandType !== 'delivery') {
       setOtherFees(0);
     } else {
-      setOtherFees((restaurant?.deliveryPrice?.amount || 0) / 100);
+      setOtherFees((restaurant?.deliveryPrice?.amount || 0) / 100 + deliveryPriceAmount);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [commandType]);
+  }, [commandType, deliveryPriceAmount]);
 
   const { enqueueSnackbar } = useSnackbar();
 
@@ -329,6 +328,9 @@ const Checkout: React.FC<CheckoutProps> = ({
 
   const sendCommand = useCallback(
     async () => {
+
+      console.log("sendCommand")
+
       const { restaurant, foods, menus, totalPrice } = cart;
 
       const data: Command = {
@@ -381,7 +383,8 @@ const Checkout: React.FC<CheckoutProps> = ({
         etage: commandType === 'delivery' ? Number(floor) : undefined,
         optionLivraison: commandType === 'delivery' ? deliveryOption : undefined,
         comment,
-        totalPrice: totalPrice + otherFees + deliveryPriceAmount,
+        totalPrice: ((totalPrice / 100) + otherFees) * 100,
+        priceLivraison: deliveryPriceAmount,
         restaurant: restaurant?._id,
         priceless,
         confirmationCode,
@@ -402,7 +405,16 @@ const Checkout: React.FC<CheckoutProps> = ({
           }
         );
 
+        console.log("/order-summary", {
+          cart: cart,
+          code,
+          comment,
+          commandType,
+          shippingTime
+        })
+        
         history.push('/order-summary', { ...cart, code, comment, commandType, shippingTime });
+
         window.location.reload();
         resetCart();
       } catch (e) {
@@ -415,6 +427,8 @@ const Checkout: React.FC<CheckoutProps> = ({
   const handleToken: (token: Token) => Promise<void> = async (token) => {
     try {
       setInProgress(true);
+
+      console.log("handleToken")
 
       const response = await Api.post('/checkout', {
         token,
@@ -459,6 +473,8 @@ const Checkout: React.FC<CheckoutProps> = ({
             })),
           })),
         })),
+        totalPrice: ((totalPrice / 100) + otherFees) * 100,
+        priceLivraison: deliveryPriceAmount,
         shipAsSoonAsPossible:
           commandType === 'delivery' ? shipAsSoonAsPossible : undefined,
         shippingAddress:
@@ -473,7 +489,6 @@ const Checkout: React.FC<CheckoutProps> = ({
           commandType === 'delivery' ? deliveryOption : undefined,
         comment,
         confirmationCode,
-        totalPrice: totalPrice + otherFees,
         codeAppartement: commandType === 'delivery' ? shippingAppartementNumero : undefined,
         restaurant: restaurant?._id,
         priceless,
@@ -489,6 +504,7 @@ const Checkout: React.FC<CheckoutProps> = ({
       );
 
       history.push('/order-summary', { ...cart, code, comment, commandType, shippingTime });
+
       resetCart();
     } catch (error) {
       setInProgress(false);
@@ -562,18 +578,18 @@ const Checkout: React.FC<CheckoutProps> = ({
       setInProgress(true);
 
       try {
-        // await sendCode({
-        //   commandType,
-        //   relatedUser: user ? user._id : undefined,
-        //   customer: !authenticated
-        //     ? {
-        //       name,
-        //       address,
-        //       phoneNumber,
-        //       email,
-        //     }
-        //     : undefined,
-        // });
+        await sendCode({
+          commandType,
+          relatedUser: user ? user._id : undefined,
+          customer: !authenticated
+            ? {
+              name,
+              address,
+              phoneNumber,
+              email,
+            }
+            : undefined,
+        });
 
         setOpenConfirmation(true);
       } catch (err) {
@@ -634,6 +650,8 @@ const Checkout: React.FC<CheckoutProps> = ({
             enqueueSnackbar('ERROR', {
               variant: 'error',
             });
+            setblockDelivery(true);
+
             return;
           } else {
             directionsRenderer.setDirections(response); // Add route to the map
@@ -642,6 +660,8 @@ const Checkout: React.FC<CheckoutProps> = ({
               enqueueSnackbar('ERROR', {
                 variant: 'error',
               });
+              setblockDelivery(true);
+
               return;
             }
             else {
@@ -652,13 +672,15 @@ const Checkout: React.FC<CheckoutProps> = ({
                 restaurant.livraison?.MATRIX &&
                 (restaurant.livraison?.MATRIX as any[])[0] <= distance) {
 
-                enqueueSnackbar(`Le restaurant ne peut pas faire de livraison à cette ville distance maximal est ${(restaurant.livraison?.MATRIX as any[])[0]}`, {
+                enqueueSnackbar(`vous êtes à ${distance} Km du restaurant, il ne peut pas faire de livraison à cette ville distance maximal est ${(restaurant.livraison?.MATRIX as any[])[0]} KM`, {
                   variant: 'error',
                 });
+                setblockDelivery(true);
                 return;
 
               }
-
+              setblockDelivery(false);
+              setOtherFees(distance * restaurant.priceByMiles)
               setDeliveryPrice(distance * restaurant.priceByMiles);
             }
           }
@@ -1368,27 +1390,32 @@ const Checkout: React.FC<CheckoutProps> = ({
                 </Step>
               )}
             </Stepper>
-            {
-              (restaurant && restaurant.aEmporter) ||
-              (restaurant && (restaurant.delivery) ||
-                (restaurant && restaurant.surPlace)
-              ) && smDown && (
-                <Button
-                  variant="contained"
-                  size="large"
-                  className="translate"
-                  color="primary"
-                  fullWidth
-                  style={{ marginTop: 8, marginBottom: 16 }}
-                  onClick={checkout}
-                >
-                  {inProgress ? (
-                    <CircularProgress size={24} color="inherit" />
-                  ) : (
-                    'Passer ma commande'
+            {!blockDelivery && (
+              <>
+                {
+                  (restaurant && restaurant.aEmporter) ||
+                  (restaurant && (restaurant.delivery) ||
+                    (restaurant && restaurant.surPlace)
+                  ) && smDown && (
+                    <Button
+                      variant="contained"
+                      size="large"
+                      className="translate"
+                      color="primary"
+                      fullWidth
+                      style={{ marginTop: 8, marginBottom: 16 }}
+                      onClick={checkout}
+                    >
+                      {inProgress ? (
+                        <CircularProgress size={24} color="inherit" />
+                      ) : (
+                        'Passer ma commande'
+                      )}
+                    </Button>
                   )}
-                </Button>
-              )}
+              </>
+            )}
+
           </Grid>
           <Grid item xs={12} md={6} lg={5}>
             {restaurant && (
@@ -1889,7 +1916,7 @@ const Checkout: React.FC<CheckoutProps> = ({
                 style={{ fontWeight: 700 }}
               >{`€${(
                 (estimateTotalPrice(cart) + (otherFees * 100)) /
-                100 + deliveryPriceAmount
+                100
               ).toLocaleString(undefined, {
                 minimumFractionDigits: 1,
               })}`}</Typography>
@@ -1911,29 +1938,31 @@ const Checkout: React.FC<CheckoutProps> = ({
                 InputProps={{ disableUnderline: true }}
               />
             </Paper>
-
-            {
-              (
-                (restaurant && restaurant.aEmporter) ||
-                (restaurant && restaurant.delivery) ||
-                (restaurant && restaurant.surPlace)
-              ) && !smDown && (
-                <Button
-                  variant="contained"
-                  size="large"
-                  className="translate"
-                  color="primary"
-                  fullWidth
-                  style={{ marginTop: 8, marginBottom: 16 }}
-                  onClick={checkout}
-                >
-                  {inProgress ? (
-                    <CircularProgress size={24} color="inherit" />
-                  ) : (
-                    'Passer ma commande'
+            {!blockDelivery && (
+              <>
+                {
+                  (
+                    (restaurant && restaurant.aEmporter) ||
+                    (restaurant && restaurant.delivery) ||
+                    (restaurant && restaurant.surPlace)
+                  ) && !smDown && (
+                    <Button
+                      variant="contained"
+                      size="large"
+                      className="translate"
+                      color="primary"
+                      fullWidth
+                      style={{ marginTop: 8, marginBottom: 16 }}
+                      onClick={checkout}
+                    >
+                      {inProgress ? (
+                        <CircularProgress size={24} color="inherit" />
+                      ) : (
+                        'Passer ma commande'
+                      )}
+                    </Button>
                   )}
-                </Button>
-              )}
+              </>)}
 
             {smDown && <Divider className={classes.divider} />}
           </Grid>

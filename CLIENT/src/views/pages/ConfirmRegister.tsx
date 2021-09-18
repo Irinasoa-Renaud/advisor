@@ -13,6 +13,7 @@ import {
 import { makeStyles } from '@material-ui/core/styles';
 import { confirm_account, resendConfirmationCode } from '../../services/auth';
 import clsx from 'clsx';
+import { useSnackbar } from 'notistack';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -37,6 +38,7 @@ const ConfirmRegister: React.FC = () => {
   const [erreurMessage, setErreurMessage] = useState('');
 
   const classes = useStyles();
+  const { enqueueSnackbar } = useSnackbar();
 
   const history = useHistory();
 
@@ -48,16 +50,21 @@ const ConfirmRegister: React.FC = () => {
       return setErreurMessage('code vide');
     }
 
-    var data = { code, token };
+    var SendData = { code, token };
 
     try {
 
-      if (await confirm_account(data)) {
+      const { data: data } = await confirm_account(SendData)
+
+      if (data) {
         history.push('/login');
       }
 
     } catch (e) {
-      setErreurMessage('veuillez verifier vos informations');
+      enqueueSnackbar(`Code Incorrect`, {
+        variant: 'error',
+      });
+
     }
   };
 

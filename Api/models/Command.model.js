@@ -1,151 +1,138 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const Command = new Schema(
-  {
+const Command = new Schema({
     comment: {
-      type: String,
+        type: String,
+    },
+    priceLivraison: {
+        type: String,
+        required: false,
     },
     optionLivraison: {
-      type: String,
-      required: false,
-      enum: ['behind_the_door', 'on_the_door', 'out'],
+        type: String,
+        required: false,
+        enum: ['behind_the_door', 'on_the_door', 'out'],
     },
     appartement: {
-      type: String,
-      required: false,
-      default: 'néant',
+        type: String,
+        required: false,
+        default: 'néant',
     },
     codeAppartement: {
-      type: String,
-      required: false,
-      default: 'néant',
+        type: String,
+        required: false,
+        default: 'néant',
     },
     etage: {
-      type: Number,
-      required: false,
+        type: Number,
+        required: false,
     },
     relatedUser: {
-      type: mongoose.Types.ObjectId,
-      ref: 'User',
-      required: false,
+        type: mongoose.Types.ObjectId,
+        ref: 'User',
+        required: false,
     },
     code: {
-      type: Number,
-      required: true,
+        type: Number,
+        required: true,
     },
     customer: {
-      name: String,
-      email: String,
-      address: String,
-      phoneNumber: String,
+        name: String,
+        email: String,
+        address: String,
+        phoneNumber: String,
     },
     commandType: {
-      type: String,
-      required: true,
-      enum: ['delivery', 'on_site', 'takeaway'],
+        type: String,
+        required: true,
+        enum: ['delivery', 'on_site', 'takeaway'],
     },
     shippingAddress: {
-      type: String,
+        type: String,
     },
     shippingTime: {
-      type: Number,
+        type: Number,
     },
     shipAsSoonAsPossible: {
-      type: Boolean,
+        type: Boolean,
     },
     totalPrice: {
-      type: Number,
-      required: true,
+        type: Number,
+        required: true,
     },
     confirmed: {
-      type: Boolean,
-      default: false,
-    },
-    payed: {
-      status: {
         type: Boolean,
         default: false,
-      },
-      paymentIntentId: String,
-      paymentChargeId: String,
+    },
+    payed: {
+        status: {
+            type: Boolean,
+            default: false,
+        },
+        paymentIntentId: String,
+        paymentChargeId: String,
     },
     validated: {
-      type: Boolean,
-      default: false,
+        type: Boolean,
+        default: false,
     },
     paiementLivraison: {
-      type: Boolean,
-      default: false,
+        type: Boolean,
+        default: false,
     },
     revoked: {
-      type: Boolean,
-      default: false,
+        type: Boolean,
+        default: false,
     },
     restaurant: {
-      type: Schema.Types.ObjectId,
-      ref: 'Restaurant',
+        type: Schema.Types.ObjectId,
+        ref: 'Restaurant',
     },
-    menus: [
-      {
+    menus: [{
         quantity: Number,
         item: { type: Schema.Types.ObjectId, ref: 'Menu' },
         comment: String,
-        foods: [
-          {
+        foods: [{
             food: {
-              type: Schema.Types.ObjectId,
-              ref: 'Food',
+                type: Schema.Types.ObjectId,
+                ref: 'Food',
             },
-            options: [
-              {
+            options: [{
                 title: String,
                 maxOptions: Number,
-                items: [
-                  {
+                items: [{
                     item: { type: Schema.Types.ObjectId, ref: 'Accompaniment' },
                     quantity: Number,
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-    ],
-    items: [
-      {
+                }, ],
+            }, ],
+        }, ],
+    }, ],
+    items: [{
         quantity: Number,
         item: { type: Schema.Types.ObjectId, ref: 'Food' },
         comment: String,
-        options: [
-          {
+        options: [{
             title: String,
             maxOptions: Number,
-            items: [
-              {
+            items: [{
                 item: { type: Schema.Types.ObjectId, ref: 'Accompaniment' },
                 quantity: Number,
-              },
-            ],
-          },
-        ],
-      },
-    ],
+            }, ],
+        }, ],
+    }, ],
     priceless: {
-      type: Boolean,
-      required: true,
+        type: Boolean,
+        required: true,
     },
     createdAt: {
-      type: Date,
-      default: Date.now,
+        type: Date,
+        default: Date.now,
     },
-  },
-  {
+}, {
     timestamps: {
-      updatedAt: 'updatedAt',
+        updatedAt: 'updatedAt',
     },
-  },
-);
+}, );
 
 module.exports = mongoose.model('Command', Command);

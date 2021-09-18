@@ -565,10 +565,7 @@ const OrderDetailsPage: React.FC<OrderDetailsPageProps> = ({ id }) => {
               style={{ padding: '8px 0' }}
             >
               <Typography className="translate">Frais de livraison</Typography>
-              <Typography className="notranslate">{`€${(
-                ((command.restaurant as Restaurant).deliveryPrice?.amount ||
-                  0) / 100
-              ).toLocaleString(undefined, {
+              <Typography className="notranslate">{command.priceLivraison && `€${(command.priceLivraison).toLocaleString(undefined, {
                 minimumFractionDigits: 1,
               })}`}</Typography>
             </Grid>}

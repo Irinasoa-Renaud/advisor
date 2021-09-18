@@ -10,22 +10,15 @@ export const register: (data: {
   email: string;
   password: string;
 }) => Promise<any> = async (data) => {
-  try {
-    const reponse = await Axios(
-      `${process.env.REACT_APP_API_URL}/users/register`,
-      {
-        method: 'POST',
-        data,
-      },
-    );
-    if (reponse.status === 200) {
-      return reponse.data;
-    } else {
-      return false;
-    }
-  } catch (e) {
-    return false;
-  }
+
+  return await Axios(
+    `${process.env.REACT_APP_API_URL}/users/register`,
+    {
+      method: 'POST',
+      data,
+    },
+  );
+
 };
 
 export const resendConfirmationCode: (token: string) => Promise<any> = async (
@@ -46,22 +39,13 @@ export const resendConfirmationCode: (token: string) => Promise<any> = async (
 };
 
 export const confirm_account: (data: {}) => Promise<any> = async (data) => {
-  try {
-    const reponse = await Axios(
-      `${process.env.REACT_APP_API_URL}/users/confirm-account`,
-      {
-        method: 'POST',
-        data: data,
-      },
-    );
-    if (reponse.status === 200) {
-      return true;
-    } else {
-      return false;
-    }
-  } catch (e) {
-    return false;
-  }
+  return await Axios(
+    `${process.env.REACT_APP_API_URL}/users/confirm-account`,
+    {
+      method: 'POST',
+      data: data,
+    },
+  );
 };
 
 export const reset_password: (data: {}) => Promise<any> = async (data) => {
