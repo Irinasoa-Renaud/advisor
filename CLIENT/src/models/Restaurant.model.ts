@@ -23,6 +23,7 @@ interface Restaurant {
   address: string;
   city: string;
   foods: string[];
+  priceByMiles: any;
   menus: string[];
   admin?: string;
   qrcodeLink: string;

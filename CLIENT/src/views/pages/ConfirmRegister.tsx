@@ -41,6 +41,7 @@ const ConfirmRegister: React.FC = () => {
   const history = useHistory();
 
   const handleConfirm = async (e: React.FormEvent<HTMLFormElement>) => {
+
     e.preventDefault();
 
     if (!code) {
@@ -48,8 +49,13 @@ const ConfirmRegister: React.FC = () => {
     }
 
     var data = { code, token };
+
     try {
-      if (await confirm_account(data)) history.push('/login');
+
+      if (await confirm_account(data)) {
+        history.push('/login');
+      }
+
     } catch (e) {
       setErreurMessage('veuillez verifier vos informations');
     }

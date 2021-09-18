@@ -71,6 +71,8 @@ interface User {
    * Related resto
    */
   resto?: string;
+
+  validated: boolean
 }
 
 export default User;

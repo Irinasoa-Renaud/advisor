@@ -205,14 +205,14 @@ const Checkout: React.FC<CheckoutProps> = ({
     priceType: price
   }))
 
-  useEffect(() => {
-    if (
-      (menus.length === 0) &&
-      (foods.length === 0)
-    ) {
-      history.push('/home')
-    }
-  })
+  // useEffect(() => {
+  //   if (
+  //     (menus.length === 0) &&
+  //     (foods.length === 0)
+  //   ) {
+  //     history.push('/home')
+  //   }
+  // })
 
   const [commandType, setCommandType] = useState<CommandType>(() =>
     authenticated && restaurant && restaurant.delivery && priceType !== 'priceless' && menus.findIndex(({ item: { type } }) => type === 'priceless') === -1
@@ -300,6 +300,7 @@ const Checkout: React.FC<CheckoutProps> = ({
 
   const [comment, setComment] = useState('');
   const [email, setEmail] = useState(user?.email || '');
+  const [deliveryPriceAmount, setDeliveryPrice] = useState(0);
 
   const [inProgress, setInProgress] = useState(false);
 
@@ -331,9 +332,6 @@ const Checkout: React.FC<CheckoutProps> = ({
       const { restaurant, foods, menus, totalPrice } = cart;
 
       const data: Command = {
-
-
-
         relatedUser: authenticated ? user?._id : undefined,
         customer: !authenticated
           ? {
@@ -383,7 +381,7 @@ const Checkout: React.FC<CheckoutProps> = ({
         etage: commandType === 'delivery' ? Number(floor) : undefined,
         optionLivraison: commandType === 'delivery' ? deliveryOption : undefined,
         comment,
-        totalPrice: totalPrice + otherFees,
+        totalPrice: totalPrice + otherFees + deliveryPriceAmount,
         restaurant: restaurant?._id,
         priceless,
         confirmationCode,
@@ -546,7 +544,7 @@ const Checkout: React.FC<CheckoutProps> = ({
       if (restaurant &&
         (
           restaurant.delivery &&
-          +(restaurant.minPriceIsDelivery) >= (estimateTotalPrice(cart) / 100))
+          (+restaurant.minPriceIsDelivery) >= (estimateTotalPrice(cart) / 100) && commandType === 'delivery')
       ) {
         return enqueueSnackbar(
           ` ${restaurant.minPriceIsDelivery} € minimun pour effectuer une livraison`,
@@ -615,15 +613,57 @@ const Checkout: React.FC<CheckoutProps> = ({
         return;
       }
 
-      if ((restaurant.livraison.blackListCP as any[])?.includes(postalCode.trim().toLowerCase())) {
-        setopenDialog(true);
-        return;
+      let directionsService = new google.maps.DirectionsService();
+      let directionsRenderer = new google.maps.DirectionsRenderer();
+
+      const route: any = {
+        origin: {
+          lat: restaurant.location.coordinates[1],
+          lng: restaurant.location.coordinates[0],
+        },
+        destination: {
+          lat: lat,
+          lng: lng,
+        },
+        travelMode: 'DRIVING'
       }
 
-      if ((restaurant.livraison.blackListCity as any[])?.includes(city.trim().toLowerCase())) {
-        setopenDialog(true);
-        return;
-      }
+      directionsService.route(route,
+        function (response: any, status: any) { // anonymous function to capture directions
+          if (status !== 'OK') {
+            enqueueSnackbar('ERROR', {
+              variant: 'error',
+            });
+            return;
+          } else {
+            directionsRenderer.setDirections(response); // Add route to the map
+            var directionsData = response.routes[0].legs[0]; // Get data about the mapped route
+            if (!directionsData) {
+              enqueueSnackbar('ERROR', {
+                variant: 'error',
+              });
+              return;
+            }
+            else {
+
+              const distance = Math.ceil((directionsData.distance.value / 1000));
+
+              if (
+                restaurant.livraison?.MATRIX &&
+                (restaurant.livraison?.MATRIX as any[])[0] <= distance) {
+
+                enqueueSnackbar(`Le restaurant ne peut pas faire de livraison à cette ville distance maximal est ${(restaurant.livraison?.MATRIX as any[])[0]}`, {
+                  variant: 'error',
+                });
+                return;
+
+              }
+
+              setDeliveryPrice(distance * restaurant.priceByMiles);
+            }
+          }
+
+        })
 
     }
 
@@ -698,7 +738,6 @@ const Checkout: React.FC<CheckoutProps> = ({
                             );
                           }
 
-
                           if (priceType === 'priceless' || menus.findIndex(({ item: { type } }) => type === 'priceless')) {
                             return enqueueSnackbar(
                               'Le menu est sans prix, donc pas de livraison',
@@ -733,16 +772,12 @@ const Checkout: React.FC<CheckoutProps> = ({
 
                   <Box height={12} />
 
-                  {commandType === 'delivery' && (
+                  {console.log("priceType", priceType)}
+                  {(commandType === 'delivery') && (priceType) && (
                     <>
-                      {console.log(
-                        "test", {
-                        minPriceIsDelivery: restaurant && +restaurant.minPriceIsDelivery,
-                        estimateTotalPriceL: estimateTotalPrice(cart) / 100
-                      }
-                      )}
+
                       {
-                        restaurant && (+(restaurant.minPriceIsDelivery) >= (estimateTotalPrice(cart) / 100))
+                        restaurant && ((+restaurant.minPriceIsDelivery) >= (estimateTotalPrice(cart) / 100))
                           ? (
                             <>
                               <Alert severity="error">
@@ -795,7 +830,8 @@ const Checkout: React.FC<CheckoutProps> = ({
 
                   {commandType !== 'on_site' &&
                     (restaurant &&
-                      (+(restaurant.minPriceIsDelivery) >= (estimateTotalPrice(cart) / 100)))
+                      (+restaurant.minPriceIsDelivery) < (estimateTotalPrice(cart) / 100))
+
                     && (
                       <Button
                         variant="contained"
@@ -1398,13 +1434,20 @@ const Checkout: React.FC<CheckoutProps> = ({
                     quantity,
                   } = food;
                   let quantity_food = quantity;
+
                   {/**
 ----------------------------------------------------------------------------------------------------------------
 */}
                   return (
                     <Button fullWidth key={id} style={{ display: 'block' }}>
 
-                      <IconButton onClick={() => removeFood(id)}  >
+                      <IconButton onClick={() => {
+                        removeFood(id)
+                        if (foods.length === 1) {
+                          history.push('/home')
+                        }
+                      }
+                      }  >
                         <DeleteIcon />
                       </IconButton>
                       <Grid container spacing={1} alignItems="center">
@@ -1513,7 +1556,7 @@ const Checkout: React.FC<CheckoutProps> = ({
                                               </Grid>
 
                                               {
-                                                item.price.amount !== 0 && (
+                                                (item.price.amount !== 0) && (
                                                   <Grid
                                                     item
                                                     style={{
@@ -1636,7 +1679,12 @@ const Checkout: React.FC<CheckoutProps> = ({
                             </Typography>}
                           </Grid>
                           <Grid item>
-                            <IconButton onClick={() => removeMenu(id)}>
+                            <IconButton onClick={() => {
+                              removeMenu(id)
+                              if (menus.length === 1) {
+                                history.push('/home')
+                              }
+                            }}>
                               <DeleteIcon />
                             </IconButton>
                           </Grid>
@@ -1668,13 +1716,9 @@ const Checkout: React.FC<CheckoutProps> = ({
                                     <Grid item>
                                       <Typography>{name}</Typography>
                                     </Grid>
-                                    {price && priceType !== 'priceless' && price !== 0 && (
+                                    {(priceType && (price && +price !== 0)) && (
                                       <Grid item>
-                                        <Typography>{`€${(
-                                          price / 100
-                                        ).toLocaleString(undefined, {
-                                          minimumFractionDigits: 1,
-                                        })}`}</Typography>
+                                        <Typography>{`€ ${(price / 100)}`}</Typography>
                                       </Grid>
                                     )}
                                   </Grid>
@@ -1740,32 +1784,35 @@ const Checkout: React.FC<CheckoutProps> = ({
                                               </Grid>
                                             ))}
                                           </Grid>
-                                          {priceType !== 'priceless' && (items.reduce((p, c) => p + c.quantity * (c.item.price?.amount || 0), 0) / 100) !== 0 && <Grid item>
-                                            {!!(
-                                              items.reduce(
-                                                (p, c) =>
-                                                  p +
-                                                  c.quantity *
-                                                  (c.item.price?.amount || 0),
-                                                0
-                                              ) / 100
-                                            ) && (
-                                                <Typography
-                                                  className={classes.itemPrice}
-                                                >{`€${(
-                                                  items.reduce(
-                                                    (p, c) =>
-                                                      p +
-                                                      c.quantity *
-                                                      (c.item.price?.amount ||
-                                                        0),
-                                                    0
-                                                  ) / 100
-                                                ).toLocaleString(undefined, {
-                                                  minimumFractionDigits: 1,
-                                                })}`}</Typography>
-                                              )}
-                                          </Grid>}
+                                          {(priceType !== 'priceless'
+                                            && (items.reduce((p, c) => p + c.quantity * (c.item.price?.amount || 0), 0) / 100) !== 0) &&
+                                            (<Grid item>
+                                              {!!(
+                                                items.reduce(
+                                                  (p, c) =>
+                                                    p +
+                                                    c.quantity *
+                                                    (c.item.price?.amount || 0),
+                                                  0
+                                                ) / 100
+                                              ) && (
+                                                  <Typography
+                                                    className={classes.itemPrice}
+                                                  >{`€${(
+                                                    items.reduce(
+                                                      (p, c) =>
+                                                        p +
+                                                        c.quantity *
+                                                        (c.item.price?.amount ||
+                                                          0),
+                                                      0
+                                                    ) / 100
+                                                  ).toLocaleString(undefined, {
+                                                    minimumFractionDigits: 1,
+                                                  })}`}</Typography>
+                                                )}
+                                            </Grid>)
+                                          }
                                         </Grid>
                                       </Grid>
                                     )
@@ -1815,7 +1862,7 @@ const Checkout: React.FC<CheckoutProps> = ({
                     Frais de livraison
                   </Typography>
                   <Typography className="notranslate">{`€${(
-                    (restaurant?.deliveryPrice?.amount || 0) / 100
+                    (restaurant?.deliveryPrice?.amount || 0) / 100 + deliveryPriceAmount
                   ).toLocaleString(undefined, {
                     minimumFractionDigits: 1,
                   })}`}</Typography>
@@ -1842,7 +1889,7 @@ const Checkout: React.FC<CheckoutProps> = ({
                 style={{ fontWeight: 700 }}
               >{`€${(
                 (estimateTotalPrice(cart) + (otherFees * 100)) /
-                100
+                100 + deliveryPriceAmount
               ).toLocaleString(undefined, {
                 minimumFractionDigits: 1,
               })}`}</Typography>

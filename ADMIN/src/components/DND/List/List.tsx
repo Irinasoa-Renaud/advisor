@@ -28,7 +28,8 @@ const Container: FC<any> = (props: any) => {
 		selectedResto,
 		disableAll,
 		accompanimentOptions,
-		updatePrice
+		updatePrice,
+		setAddEdit
 	} = props as any;
 
 	const moveCard = useCallback(
@@ -73,21 +74,22 @@ const Container: FC<any> = (props: any) => {
 			<DndProvider backend={HTML5Backend}>
 
 				<div style={style}>
-					{list.map((card: any, index: any) => <Card
-						key={card.id}
-						index={index}
-						id={card.id}
-						onchange={onchange}
-						html={card}
-						moveCard={moveCard}
-						removeAccompaniment={removeAccompaniment}
-						disabled={!selectedResto && disableAll}
-						accompanimentOptions={accompanimentOptions}
-						setUpdatePrice={setUpdatePrice}
-						setCurrentOption={setCurrentOption}
-						setAccompagnement={setAccompagnement}
-						updatePrice={updatePrice}
-					/>)}
+					{list.map((card: any, index: any) => <div key={card.id} onClick={() => setAddEdit(card, index)}>
+						<Card
+							index={index}
+							id={card.id}
+							onchange={onchange}
+							html={card}
+							moveCard={moveCard}
+							removeAccompaniment={removeAccompaniment}
+							disabled={!selectedResto && disableAll}
+							accompanimentOptions={accompanimentOptions}
+							setUpdatePrice={setUpdatePrice}
+							setCurrentOption={setCurrentOption}
+							setAccompagnement={setAccompagnement}
+							updatePrice={updatePrice}
+						/>
+					</div>)}
 				</div>
 			</DndProvider>
 		</>

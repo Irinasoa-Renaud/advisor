@@ -23,6 +23,7 @@ import {
   Delete as DeleteIcon,
   FilterList as FilterListIcon,
 } from '@material-ui/icons';
+import RotateLeftIcon from '@material-ui/icons/RotateLeft';
 import IOSSwitch from '../Common/IOSSwitch';
 import CustomScrollbar from 'react-custom-scrollbars';
 import DateRangeFilter from './DateRangeFilter';
@@ -64,6 +65,7 @@ const useToolbarStyles = makeStyles((theme) => ({
     },
   },
 }));
+
 
 export type FilterType =
   | 'STRING'
@@ -154,6 +156,7 @@ interface TableToolbarProps<T> {
   onActivateFilter?: (id: string, type: FilterType) => void;
   onDeactivateFilter?: (id: string) => void;
   filterValues: FilterValues<T>;
+  setFilterValues: (e: any) => void;
 }
 
 function TableToolbar<T>(props: TableToolbarProps<T>) {
@@ -169,12 +172,13 @@ function TableToolbar<T>(props: TableToolbarProps<T>) {
     onDeactivateFilter,
     filterValues,
     onFilterValuesChange,
+    setFilterValues
   } = props;
 
   const classes = useToolbarStyles();
 
   const [filterAnchor, setFilterAnchor] = useState<HTMLButtonElement>();
-  const [activeButtonId, setActiveButtonId] = useState<number>(0);
+  const [activeButtonId, setActiveButtonId] = useState<number>(2);
 
   const [restoOptions, setRestoOptions] = useState<any[]>([]);
   const [activeType, setActiveType] = useState<boolean>(false);
@@ -218,6 +222,14 @@ function TableToolbar<T>(props: TableToolbarProps<T>) {
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setRestaurantSelected]);
+
+  const autoDate = (id: any, setActiveButtonId: any) => {
+    onFilterValuesChange?.(id as string, {
+      startDate: moment().subtract(6, 'days').toDate(),
+      endDate: new Date(),
+    })
+    setActiveButtonId(2)
+  }
 
   const renderFilters = useCallback(() => {
     const commandTypeOptions = [
@@ -496,14 +508,14 @@ function TableToolbar<T>(props: TableToolbarProps<T>) {
                 );
               else if (filter.type === 'DATE')
                 return (
+
                   <React.Fragment key={id as string}>
+
                     <DateRangeFilter
                       key={id as string}
                       value={{
-                        startDate:
-                          filterValues[id as keyof T]?.startDate || new Date(),
-                        endDate:
-                          filterValues[id as keyof T]?.endDate || new Date(),
+                        startDate: moment().subtract(6, 'days').toDate(),
+                        endDate: new Date(),
                       }}
                       onChange={(value) =>
                         onFilterValuesChange?.(id as string, value)
@@ -732,6 +744,20 @@ function TableToolbar<T>(props: TableToolbarProps<T>) {
               {addButtonLabel}
             </Button>
           )}
+
+          {(Object.keys(filterValues).length > 0) && (
+            <Button
+              variant="contained"
+              color="secondary"
+              startIcon={<RotateLeftIcon />}
+              className={classes.addBtn}
+              onClick={() => setFilterValues({})}
+
+            >
+              Reset
+            </Button>
+          )}
+
           <Tooltip title="Filtrer la liste">
             <IconButton
               aria-label="filter list"

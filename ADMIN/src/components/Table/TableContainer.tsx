@@ -459,6 +459,7 @@ export default function TableContainer<T extends { _id: string }>(
         addButtonLabel={addButtonLabel}
         showAddButton={showAddButton}
         onAddClick={onAddClick}
+        setFilterValues={setFilterValues}
         onDeleteClick={onDeleteClick}
         filters={options.filters}
         filterValues={filterValues}
@@ -479,12 +480,8 @@ export default function TableContainer<T extends { _id: string }>(
                       ? { min: 0, max: 0 }
                       : type === 'DATE'
                         ? {
-                          startDate: moment({
-                            hour: 0,
-                            minute: 0,
-                            seconds: 0,
-                          }).toDate(),
-                          endDate: moment({ hour: 23, minute: 59, seconds: 59 }),
+                          startDate: moment().subtract(6, 'days').toDate(),
+                          endDate: new Date(),
                         }
                         : type === 'COMMAND_TYPE'
                           ? { value: '' }

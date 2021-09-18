@@ -130,11 +130,13 @@ const UserListPage: React.FC = () => {
   );
 
   const showModification = useCallback((user: User) => {
-    const { _id, name, email, phoneNumber, roles } = user;
+
+    const { _id, name, email, phoneNumber, roles, validated } = user;
 
     modif.current = {
       _id,
       email,
+      validated,
       phoneNumber,
       role: roles[0] || '',
       firstname: name.first,

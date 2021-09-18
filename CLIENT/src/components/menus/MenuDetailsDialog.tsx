@@ -394,15 +394,18 @@ const MenuDetailsDialog: React.FC<MenuDetailsDialogProps> = ({
   const foodTypes = useMemo(
     () => [
       ...new Set(
-        item.foods.sort((a, b) => a.type?.priority - b.type?.priority).map(
-          ({ food: { type } }: any) =>
-            (typeof type?.name === 'string' && type?.name) ||
-            (type?.name as { [key: string]: string })?.fr
-        )
+        item.foods.sort((a: any, b: any) => a.food.type?.priority - b.food.type?.priority)
+          .map(
+            ({ food: { type } }: any) =>
+              (typeof type?.name === 'string' && type?.name) ||
+              (type?.name as { [key: string]: string })?.fr
+          )
       ),
     ],
     [item.foods]
+
   );
+
   const { quantity, foods: foodsInCart } = menu;
 
   const theme = useTheme();

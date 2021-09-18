@@ -97,21 +97,6 @@ const SimulationLivraison: FC = () => {
             return;
         }
 
-        if (
-            RestaurantSelected.livraison?.blackListCP &&
-            (RestaurantSelected.livraison?.blackListCP as any[])?.includes(postalCode.trim().toLowerCase())) {
-            setTestDialog("Le restaurant ne peut pas faire de livraison à cette ville");
-            setopenDialog(true);
-            return;
-        }
-
-        if (
-            RestaurantSelected.livraison?.blackListCity &&
-            (RestaurantSelected.livraison?.blackListCity as any[])?.includes(city.trim().toLowerCase())) {
-            setTestDialog("Le restaurant ne peut pas faire de livraison à cette ville");
-            setopenDialog(true);
-            return;
-        }
 
         setBlock(true);
 
@@ -156,9 +141,18 @@ const SimulationLivraison: FC = () => {
                     }
                     else {
 
+                        const distance = Math.ceil((directionsData.distance.value / 1000));
+
+                        if (
+                            RestaurantSelected.livraison?.MATRIX &&
+                            (RestaurantSelected.livraison?.MATRIX as any[])[0] <= distance) {
+                            setTestDialog(`Le restaurant ne peut pas faire de livraison à cette ville distance maximal est ${(RestaurantSelected.livraison?.MATRIX as any[])[0]}`);
+                            setopenDialog(true);
+                        }
+
                         setSuccessResponse({
                             distance: directionsData.distance.text,
-                            price: Math.ceil((directionsData.distance.value / 1000)) * +RestaurantSelected.priceByMiles,
+                            price: distance * +RestaurantSelected.priceByMiles,
                             duration: directionsData.duration.text
                         });
 

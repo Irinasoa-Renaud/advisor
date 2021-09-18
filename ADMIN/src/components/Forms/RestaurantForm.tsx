@@ -67,17 +67,11 @@ const listParametreLivraison: any[] = [
     placeholder: 'Ville gratuit'
   },
   {
-    key: 'blackListCP',
+    key: 'MATRIX',
     type: 'number',
-    titre: 'Les code postal liste noire',
-    placeholder: 'code Postal liste noire'
+    titre: 'Distance maximum de livraison',
+    placeholder: 'Distance maximum'
   },
-  {
-    key: 'blackListCity',
-    type: 'text',
-    titre: 'Les villes liste noire',
-    placeholder: 'Ville liste noire'
-  }
 ]
 
 type OpeningTime = {

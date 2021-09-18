@@ -188,7 +188,7 @@ const AccompanimentForm: React.FC<AccompanimentFormProps> = ({
             </>
           )}
           <Box height={theme.spacing(2)} />
-          <Grid item>
+          {/* <Grid item>
             <FormControlLabel
               control={
                 <IOSSwitch
@@ -199,7 +199,7 @@ const AccompanimentForm: React.FC<AccompanimentFormProps> = ({
               }
               label="Obligatoire"
             />
-          </Grid>
+          </Grid> */}
         </Grid>
         <Grid
           item

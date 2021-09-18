@@ -1,0 +1,38 @@
+
+Slide à mettre dans la page de récapitulatif et le titre est PLAT RECOMMANDÉ (WEB)(ok)
+Affichage du numéro de téléphone à changer dans le module RESTAURANT (ADMIN)(ok)
+Gérer le filtre PLAT dans le client pour la séparation des allergènes / attributs (WEB)(ok)
+Gérer le filtre ATTRIBUT dans le module PLAT (ADMIN) => Il ne prend pas en compte les allergènes or ça doit être le cas(ok)
+Une remise est valable seulement pour les commandes à emporter et livraison (Cacher REMISE si A emporter ou livraison n'est pas TRUE) (ADMIN)(ok)
+Paramètre de livraison à voir car les données enregistrés ne s'affiche pas lors d'une modification  OK
+Affichage de 4 restau / plat sur la page d'accueil(OK)
+Enlever le filtre Restaurant dans le Restaurant recommandé  (ADMIN)(ok)
+Gérer les choix de recommandation de restaurant (Il faut qu'on puisse faire plusieurs sélection dans le choix de restaurant et qu'il faut enlever dans le choix ceux qui ont déjà été choisie)
+Affichage prix de l'accompagnement dans l'ajout d'un plat à optimiser (ADMIN)
+Affichage filtre  RESTAU dans Plat recommandé (ADMIN)(ok)
+Bug lors de l'affichage quand on met plusieurs Plat recommandé par RESTAURANT (Statut comme erreur) (WEB)
+Dropdown dans les accompagnements dans le MENU (WEB)(ok)
+On affiche pas le prix quand c'est un MENU à prix fixe, on affiche seulement les prix supplémentaire d'accompagnement et de plat (WEB) (ok)
+Menu à gérer pour le sans prix (WEB)  SANS PRIX = SUR PLACE
+Prix par plat dia lasa hoe prix fixe hono (WEB) => Rehefa sans prix ny commande tonga dia cachena ilay Livraison sy à emporter (ok)
+Commande Livraison ou à emporter à gérer (Livraison 50 dia avy eo atao emporter dia mbola mampiseho ihany)
+Inscription avec code (Tonga dia inscrit le olona na tsy nconfirme ary sady tsy afaka validena ilay code)
+Au cas où le client vide son panier alors on le redirige tout de suite vers la page du restaurant(ok)
+Erreur du chargement du message dans l’accès restaurateur à gérer
+Ajouter suppression filtre dans toute l’application
+C'est le titre de l'accompagnement qui est obligatoire ou pas non les accompagnements (ADMIN - WEB)
+Les boissons ne sont pas affichés (WEB)
+Prix calcul dans la simulation de livraison
+Au delà de xxx Km no tsy manao livraison au lieu des listes noires 
+A mettre un choix  TOUT sur Langue dans QR CODE et dans message pour les restaurateurs 
+MENU plat à gérer
+Optimisation recherche catégorie (WEB)
+A mettre dernier 7 jour par défaut sur le filtre dans le module commande
+Date de livraison atao date de prise de commande donc on affiche les commandes à partir de sa date de prise de commande non sa date de livraison
+Les choix d'accompagnement avec 1 seul max option doit être affiché à droite
+Type vao Plat no affichage ao am Menu ‘ADMIN - WEB)
+Ajout colonne validé dans UTILISATEUR
+
+
+
+

@@ -141,7 +141,7 @@ export const Card: FC<CardProps> = ({
             placeholder="Titre"
             style={{ flexGrow: 1 }}
             //     value={html?.title || ""}
-            defaultValue={html?.title || ""}
+            value={html?.title || ""}
             name="title"
             onChange={(e: any) => {
               onchange({
@@ -156,7 +156,7 @@ export const Card: FC<CardProps> = ({
           <TextField
             name="maxOptions"
             //     value={html?.maxOptions || ""}
-            defaultValue={html?.maxOptions || ""}
+            value={html?.maxOptions || ""}
             type="number"
             fullWidth
             variant="outlined"

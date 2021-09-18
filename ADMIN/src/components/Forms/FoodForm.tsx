@@ -36,6 +36,7 @@ import AccompagnementPriceForm from './AccompagnementPriceForm';
 import { useSnackbar } from 'notistack';
 import FormDialog from '../Common/FormDialog';
 import DnDList from '../../components/DND/List';
+import AddEditAccompagnement from '../../components/Forms/AddEditAccompagnement';
 
 
 export type FoodFormType = {
@@ -99,6 +100,9 @@ const FoodForm: React.FC<FoodFormProps> = ({
   const [typeOptions, setTypeOptions] = useState<FoodType[]>([]);
   const [loadingTypes, setLoadingTypes] = useState<boolean>(false);
   const [openAccordion, setOpenAccordion] = useState<boolean>(false);
+  const [openAccompagnement, setOpenAccompagnement] = useState<boolean>(false);
+  const [initValue, setInitValue] = useState<any>({});
+  const [index, setIndex] = useState<number>(0);
 
   const [restaurantOptions, setRestaurantOptions] = useState<Restaurant[]>([]);
   const [loadingRestaurants, setLoadingRestaurants] = useState<boolean>(false);
@@ -298,6 +302,11 @@ const FoodForm: React.FC<FoodFormProps> = ({
 
   }
 
+  const setAddEdit = (value: any, index: number) => {
+    setInitValue(value);
+    setIndex(index);
+    setOpenAccompagnement(true)
+  }
 
   const saveData = useCallback(
     (data: AccompanimentFormType) => {
@@ -638,6 +647,7 @@ const FoodForm: React.FC<FoodFormProps> = ({
                         return { ...items, id: items.id ? items.id : id };
 
                       })}
+                      setAddEdit={setAddEdit}
                       setValues={setValues}
                       values={values}
                       accompanimentOptions={accompanimentOptions
@@ -740,6 +750,26 @@ const FoodForm: React.FC<FoodFormProps> = ({
 
       </Grid>
     </form>
+
+    <FormDialog
+      title={`Ajouter un Accompagnement`}
+      open={openAccompagnement}
+      fullScreen={false}
+      onClose={() => {
+        setOpenAccompagnement(false)
+      }}
+    >
+      <AddEditAccompagnement
+        initialValues={initValue}
+        accompagnement={accompanimentOptions}
+        updateList={(value: any) => {
+          setOption(value);
+        }}
+        list={values.options}
+        onCancel={() => setOpenAccompagnement(false)}
+        index={index}
+      />
+    </FormDialog>
 
     <FormDialog
       title={`Ajouter un prix à ${currentOption?.name}`}

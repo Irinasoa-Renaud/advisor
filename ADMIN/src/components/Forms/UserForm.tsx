@@ -24,6 +24,8 @@ export type UserFormType = {
   phoneNumber: string;
   confirmPassword: string;
   role: Role | '';
+  validated: boolean
+
 };
 
 interface UserFormProps {
@@ -45,6 +47,7 @@ const UserForm: React.FC<UserFormProps> = ({
     password: '',
     confirmPassword: '',
     role: '',
+    validated: true
   },
   onCancel,
   onSave,
@@ -253,6 +256,7 @@ const UserForm: React.FC<UserFormProps> = ({
           </>
         )}
         <Grid item container justify="flex-end" alignItems="center" xs={12}>
+
           <Button
             variant="contained"
             color="default"
@@ -262,6 +266,21 @@ const UserForm: React.FC<UserFormProps> = ({
           >
             Annuler
           </Button>
+          {console.log("validated", initialValues.validated)}
+          {
+            !initialValues.validated && (
+              <Button
+                variant="contained"
+                color="default"
+                disabled={saving}
+                size="large"
+                onClick={onCancel}
+              >
+                Annuler
+              </Button>
+            )
+
+          }
           <Box width={theme.spacing(2)} />
           <Button
             variant="contained"

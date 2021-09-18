@@ -13,8 +13,6 @@ import {
 } from '@material-ui/core';
 import useStyles from './style';
 
-
-
 interface InterfaceInput {
   listAccompagnement: Accompaniment[];
   setUpdatePrice: (e: boolean) => void;
