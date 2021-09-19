@@ -549,12 +549,14 @@ const MenuDetailsDialog: React.FC<MenuDetailsDialogProps> = ({
                 {type}
               </Typography>
               <Divider className={classes.divider} />
+              {console.log("foods", foods)}
               {foods
                 .filter(
                   ({ food: { type: { name } } }: any) =>
                     (typeof name === 'string' && name === type) ||
                     (name as { [key: string]: string }).fr === type
                 )
+                .sort((a: any, b: any) => a.food.priority - b.food.priority)
                 .map(({ food, additionalPrice }: any) => (
                   <Card
                     className={classes.foodCard}
@@ -600,112 +602,157 @@ const MenuDetailsDialog: React.FC<MenuDetailsDialogProps> = ({
                         ) || openedDefault?.food._id === food._id
                       }
                     >
-                      {food.options.map((option: any) => {
-                        const options = foodsInCart.filter(
-                          ({ food: { _id } }) => _id === food._id
-                        )[0]?.options;
+                      {food.options
+                        .sort((a: any, b: any) => a.priority - b.priority)
+                        .map((option: any) => {
+                          const options = foodsInCart.filter(
+                            ({ food: { _id } }) => _id === food._id
+                          )[0]?.options;
 
-                        if (!option.maxOptions || !option.items.length)
-                          return null;
+                          if (!option.maxOptions || !option.items.length)
+                            return null;
 
-                        return (
-                          <div
-                            className={classes.accompaniment}
-                            key={option.title}
-                          >
-                            <div className={classes.accompanimentTitle}>
-                              <div onClick={() => {
-                                setOpenCollapse({
-                                  ...OpenCollapse,
-                                  [option.title]: !OpenCollapse[option.title as any] as any
-                                })
-                              }}
-                                style={{
-                                  cursor: 'pointer'
+                          return (
+                            <div
+                              className={classes.accompaniment}
+                              key={option.title}
+                            >
+                              <div className={classes.accompanimentTitle}>
+                                <div onClick={() => {
+                                  setOpenCollapse({
+                                    ...OpenCollapse,
+                                    [option.title]: !OpenCollapse[option.title as any] as any
+                                  })
                                 }}
-                              >
-                                <Grid container={true}>
+                                  style={{
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  <Grid container={true}>
 
-                                  <Grid item xs>
-                                    <Typography variant="h6">
-                                      {option.title}
-                                    </Typography>
-                                    <Typography variant="body2">{`Choissisez-en jusqu'à ${option.maxOptions}`}</Typography>
+                                    <Grid item xs>
+                                      <Typography variant="h6">
+                                        {option.title}
+                                      </Typography>
+                                      <Typography variant="body2">{`Choissisez-en jusqu'à ${option.maxOptions}`}</Typography>
+                                    </Grid>
+
+                                    <Grid item xs>
+                                      {OpenCollapse[option.title as any] ? <ExpandLess /> : <ExpandMore />}
+                                    </Grid>
+
                                   </Grid>
 
-                                  <Grid item xs>
-                                    {OpenCollapse[option.title as any] ? <ExpandLess /> : <ExpandMore />}
-                                  </Grid>
-
-                                </Grid>
-
+                                </div>
                               </div>
-                            </div>
-                            <div>
-                              <Collapse
-                                mountOnEnter={false}
-                                in={OpenCollapse[option.title as any]}
-                              >
-                                {option.maxOptions === 1 ? (
-                                  <RadioGroup name={option.title}>
-                                    {option.items.map((item: any) => (
-                                      <FormControlLabel
-                                        key={item._id}
-                                        className={classes.accompanimentOption}
-                                        value={item._id}
-                                        control={
-                                          <Radio
-                                            disabled={
-                                              foodsInCart.findIndex(
-                                                ({ food: { _id: id } }) => id === food._id
-                                              ) === -1
+                              <div>
+                                <Collapse
+                                  mountOnEnter={false}
+                                  in={OpenCollapse[option.title as any]}
+                                >
+                                  {option
+                                    .maxOptions === 1 ? (
+                                    <RadioGroup name={option.title}>
+                                      {option.items
+                                        .sort((a: any, b: any) => a.priority - b.priority)
+                                        .map((item: any) => (
+                                          <FormControlLabel
+                                            key={item._id}
+                                            className={classes.accompanimentOption}
+                                            value={item._id}
+                                            control={
+                                              <Radio
+                                                disabled={
+                                                  foodsInCart.findIndex(
+                                                    ({ food: { _id: id } }) => id === food._id
+                                                  ) === -1
+                                                }
+                                                checked={
+                                                  options &&
+                                                  options
+                                                    .filter(
+                                                      (o) => o.title === option.title
+                                                    )[0]
+                                                    ?.items.filter(
+                                                      (i) => i.item._id === item._id
+                                                    )[0]?.quantity > 0
+                                                }
+                                                onClick={() => {
+                                                  dispatch({
+                                                    type: 'clear_option',
+                                                    payload: {
+                                                      food,
+                                                      title: option.title,
+                                                    },
+                                                  });
+                                                  dispatch({
+                                                    type: 'increment_option_item',
+                                                    payload: {
+                                                      food,
+                                                      option: option.title,
+                                                      item,
+                                                    },
+                                                  });
+                                                }}
+                                              />
                                             }
-                                            checked={
-                                              options &&
-                                              options
-                                                .filter(
-                                                  (o) => o.title === option.title
-                                                )[0]
-                                                ?.items.filter(
-                                                  (i) => i.item._id === item._id
-                                                )[0]?.quantity > 0
+                                            classes={{ label: classes.label }}
+                                            labelPlacement="start"
+                                            label={
+                                              <Grid container alignItems="center">
+
+                                                <Grid item>
+
+                                                  <Avatar
+
+                                                    className={classes.itemImage}
+                                                    src={item.imageURL}
+                                                    alt={item.name}
+                                                  />
+
+                                                </Grid>
+
+                                                <Grid item>
+
+                                                  <Typography>
+                                                    {item.name}
+                                                    <br />
+                                                    {(item.price &&
+                                                      item.price.amount &&
+                                                      showGlobalPrice &&
+                                                      menuState.isShowPrice) ? `€ ${(item.price.amount / 100)}` : ' '}
+
+                                                  </Typography>
+
+                                                </Grid>
+
+                                              </Grid>
                                             }
-                                            onClick={() => {
-                                              dispatch({
-                                                type: 'clear_option',
-                                                payload: {
-                                                  food,
-                                                  title: option.title,
-                                                },
-                                              });
-                                              dispatch({
-                                                type: 'increment_option_item',
-                                                payload: {
-                                                  food,
-                                                  option: option.title,
-                                                  item,
-                                                },
-                                              });
-                                            }}
                                           />
-                                        }
-                                        classes={{ label: classes.label }}
-                                        labelPlacement="start"
-                                        label={
-                                          <Grid container alignItems="center">
+                                        ))}
+                                    </RadioGroup>
+                                  ) : option.maxOptions > 1 ? (
+                                    <Grid container direction="column">
+                                      {option.items
+                                        .sort((a: any, b: any) => a.priority - b.priority)
 
+                                        .map((item: any) => (
+                                          <Grid
+                                            key={item._id}
+                                            item
+                                            container
+                                            alignItems="center"
+                                            className={classes.accompanimentOption}
+                                            style={{ height: 74 }}
+                                          >
                                             <Grid item>
-
                                               <Avatar
-
                                                 className={classes.itemImage}
                                                 src={item.imageURL}
                                                 alt={item.name}
                                               />
-
                                             </Grid>
-
-                                            <Grid item>
+                                            <Grid item xs>
 
                                               <Typography>
                                                 {item.name}
@@ -713,147 +760,110 @@ const MenuDetailsDialog: React.FC<MenuDetailsDialogProps> = ({
                                                 {(item.price &&
                                                   item.price.amount &&
                                                   showGlobalPrice &&
-                                                  menuState.isShowPrice) ? `€ ${(item.price.amount / 100)}` : ' '}
-
+                                                  menuState.isShowPrice) ? `€ ${(item.price.amount / 100)}` : ``}
                                               </Typography>
 
                                             </Grid>
 
-                                          </Grid>
-                                        }
-                                      />
-                                    ))}
-                                  </RadioGroup>
-                                ) : option.maxOptions > 1 ? (
-                                  <Grid container direction="column">
-                                    {option.items.map((item: any) => (
-                                      <Grid
-                                        key={item._id}
-                                        item
-                                        container
-                                        alignItems="center"
-                                        className={classes.accompanimentOption}
-                                        style={{ height: 74 }}
-                                      >
-                                        <Grid item>
-                                          <Avatar
-                                            className={classes.itemImage}
-                                            src={item.imageURL}
-                                            alt={item.name}
-                                          />
-                                        </Grid>
-                                        <Grid item xs>
-
-                                          <Typography>
-                                            {item.name}
-                                            <br />
-                                            {(item.price &&
-                                              item.price.amount &&
-                                              showGlobalPrice &&
-                                              menuState.isShowPrice) ? `€ ${(item.price.amount / 100)}` : ``}
-                                          </Typography>
-
-                                        </Grid>
-
-                                        {options &&
-                                          options
-                                            .filter(
-                                              (o) => o.title === option.title
-                                            )[0]
-                                            .items.filter(
-                                              (i) => i.item._id === item._id
-                                            )[0]?.quantity && (
-                                            <>
-                                              <Grid item>
-                                                <MiniFab
-                                                  color="primary"
-                                                  onClick={() =>
-                                                    dispatch({
-                                                      type:
-                                                        'decrement_option_item',
-                                                      payload: {
-                                                        food,
-                                                        option: option.title,
-                                                        item,
-                                                      },
-                                                    })
-                                                  }
-                                                  disabled={
-                                                    !(
-                                                      (options &&
-                                                        options
-                                                          .filter(
-                                                            (o) =>
-                                                              o.title ===
-                                                              option.title
-                                                          )[0]
-                                                          .items.filter(
-                                                            (i) =>
-                                                              i.item._id ===
-                                                              item._id
-                                                          )[0]?.quantity) ||
-                                                      0
-                                                    )
-                                                  }
-                                                >
-                                                  <RemoveIcon />
-                                                </MiniFab>
-                                              </Grid>
-                                              <Grid
-                                                item
-                                                className={classes.number}
+                                            {options &&
+                                              options
+                                                .filter(
+                                                  (o) => o.title === option.title
+                                                )[0]
+                                                .items.filter(
+                                                  (i) => i.item._id === item._id
+                                                )[0]?.quantity && (
+                                                <>
+                                                  <Grid item>
+                                                    <MiniFab
+                                                      color="primary"
+                                                      onClick={() =>
+                                                        dispatch({
+                                                          type:
+                                                            'decrement_option_item',
+                                                          payload: {
+                                                            food,
+                                                            option: option.title,
+                                                            item,
+                                                          },
+                                                        })
+                                                      }
+                                                      disabled={
+                                                        !(
+                                                          (options &&
+                                                            options
+                                                              .filter(
+                                                                (o) =>
+                                                                  o.title ===
+                                                                  option.title
+                                                              )[0]
+                                                              .items.filter(
+                                                                (i) =>
+                                                                  i.item._id ===
+                                                                  item._id
+                                                              )[0]?.quantity) ||
+                                                          0
+                                                        )
+                                                      }
+                                                    >
+                                                      <RemoveIcon />
+                                                    </MiniFab>
+                                                  </Grid>
+                                                  <Grid
+                                                    item
+                                                    className={classes.number}
+                                                  >
+                                                    {(options &&
+                                                      options
+                                                        .filter(
+                                                          (o) =>
+                                                            o.title === option.title
+                                                        )[0]
+                                                        .items.filter(
+                                                          (i) =>
+                                                            i.item._id === item._id
+                                                        )[0]?.quantity) ||
+                                                      0}
+                                                  </Grid>
+                                                </>
+                                              )}
+                                            <Grid item>
+                                              <MiniFab
+                                                color="primary"
+                                                onClick={() =>
+                                                  dispatch({
+                                                    type: 'increment_option_item',
+                                                    payload: {
+                                                      food,
+                                                      option: option.title,
+                                                      item,
+                                                    },
+                                                  })
+                                                }
+                                                disabled={
+                                                  (options &&
+                                                    maxOptionExceeded(
+                                                      options.filter(
+                                                        (o) => o.title === option.title
+                                                      )[0]
+                                                    )) || foodsInCart.findIndex(
+                                                      ({ food: { _id: id } }) => id === food._id
+                                                    ) === -1
+                                                }
                                               >
-                                                {(options &&
-                                                  options
-                                                    .filter(
-                                                      (o) =>
-                                                        o.title === option.title
-                                                    )[0]
-                                                    .items.filter(
-                                                      (i) =>
-                                                        i.item._id === item._id
-                                                    )[0]?.quantity) ||
-                                                  0}
-                                              </Grid>
-                                            </>
-                                          )}
-                                        <Grid item>
-                                          <MiniFab
-                                            color="primary"
-                                            onClick={() =>
-                                              dispatch({
-                                                type: 'increment_option_item',
-                                                payload: {
-                                                  food,
-                                                  option: option.title,
-                                                  item,
-                                                },
-                                              })
-                                            }
-                                            disabled={
-                                              (options &&
-                                                maxOptionExceeded(
-                                                  options.filter(
-                                                    (o) => o.title === option.title
-                                                  )[0]
-                                                )) || foodsInCart.findIndex(
-                                                  ({ food: { _id: id } }) => id === food._id
-                                                ) === -1
-                                            }
-                                          >
-                                            <AddIcon />
-                                          </MiniFab>
-                                        </Grid>
-                                      </Grid>
-                                    ))}
-                                  </Grid>
-                                ) : null}
+                                                <AddIcon />
+                                              </MiniFab>
+                                            </Grid>
+                                          </Grid>
+                                        ))}
+                                    </Grid>
+                                  ) : null}
 
-                              </Collapse>
+                                </Collapse>
+                              </div>
                             </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
                     </Collapse>
                   </Card>
                 ))}

@@ -614,7 +614,7 @@ const CommandDetailsDialog: React.FC<CommandDetailsDialogProps> = ({
                       const fixedPrice = type === 'fixed_price',
                         priceless = type === 'priceless';
 
-                      
+
                       return (
                         <React.Fragment key={_id}>
                           <Divider />
@@ -811,7 +811,7 @@ const CommandDetailsDialog: React.FC<CommandDetailsDialogProps> = ({
                 </Typography>
                 <Typography className="notranslate">
                   {PriceFormatter.format({
-                    amount: command.restaurant?.deliveryPrice?.amount || 0,
+                    amount: +command.priceLivraison * 100 || 0,
                     currency: 'eur',
                   })}
                 </Typography>

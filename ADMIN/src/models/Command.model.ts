@@ -15,9 +15,9 @@ export interface Customer {
 
 export type PaymentStatus =
   | {
-      status: boolean;
-      paymentChargeId: string;
-    }
+    status: boolean;
+    paymentChargeId: string;
+  }
   | { status: boolean; paymentIntentId: string };
 
 export type Option = {
@@ -58,6 +58,7 @@ export interface Command {
   commandType: CommandType;
   shippingAddress: string;
   shippingTime: number;
+  priceLivraison: string;
   shipAsSoonAsPossible: boolean;
   totalPrice: number;
   confirmed: boolean;

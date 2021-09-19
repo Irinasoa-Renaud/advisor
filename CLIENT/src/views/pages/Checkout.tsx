@@ -305,15 +305,22 @@ const Checkout: React.FC<CheckoutProps> = ({
 
   const [inProgress, setInProgress] = useState(false);
 
-  const [otherFees, setOtherFees] = useState<number>((restaurant?.deliveryPrice?.amount || 0) / 100);
+  const [otherFees, setOtherFees] = useState<number>(0);
 
   const [openPayementType, setOpentPayementType] = useState(false);
 
   useEffect(() => {
+
     if (commandType !== 'delivery') {
       setOtherFees(0);
     } else {
-      setOtherFees((restaurant?.deliveryPrice?.amount || 0) / 100 + deliveryPriceAmount);
+      setOtherFees(restaurant?.deliveryPrice?.amount || 0);
+      setDeliveryPrice(restaurant?.deliveryPrice?.amount || 0);
+    }
+
+    if (restaurant && !restaurant.deliveryFixed) {
+      setDeliveryPrice(0);
+      setOtherFees(0);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [commandType, deliveryPriceAmount]);
@@ -329,7 +336,6 @@ const Checkout: React.FC<CheckoutProps> = ({
   const sendCommand = useCallback(
     async () => {
 
-      console.log("sendCommand")
 
       const { restaurant, foods, menus, totalPrice } = cart;
 
@@ -383,7 +389,7 @@ const Checkout: React.FC<CheckoutProps> = ({
         etage: commandType === 'delivery' ? Number(floor) : undefined,
         optionLivraison: commandType === 'delivery' ? deliveryOption : undefined,
         comment,
-        totalPrice: ((totalPrice / 100) + otherFees) * 100,
+        totalPrice: totalPrice + otherFees,
         priceLivraison: deliveryPriceAmount,
         restaurant: restaurant?._id,
         priceless,
@@ -405,17 +411,16 @@ const Checkout: React.FC<CheckoutProps> = ({
           }
         );
 
-        console.log("/order-summary", {
-          cart: cart,
-          code,
-          comment,
-          commandType,
-          shippingTime
-        })
-        
-        history.push('/order-summary', { ...cart, code, comment, commandType, shippingTime });
+        const listCart = {
+          ...cart,
+          totalPrice: totalPrice,
+          priceLivraison: deliveryPriceAmount,
+        }
 
-        window.location.reload();
+        history.push('/order-summary', { ...listCart, code, comment, commandType, shippingTime });
+
+        //  window.location.reload();
+
         resetCart();
       } catch (e) {
         enqueueSnackbar('Erreur...', { variant: 'error' });
@@ -473,7 +478,7 @@ const Checkout: React.FC<CheckoutProps> = ({
             })),
           })),
         })),
-        totalPrice: ((totalPrice / 100) + otherFees) * 100,
+        totalPrice: totalPrice + otherFees,
         priceLivraison: deliveryPriceAmount,
         shipAsSoonAsPossible:
           commandType === 'delivery' ? shipAsSoonAsPossible : undefined,
@@ -679,9 +684,13 @@ const Checkout: React.FC<CheckoutProps> = ({
                 return;
 
               }
-              setblockDelivery(false);
-              setOtherFees(distance * restaurant.priceByMiles)
-              setDeliveryPrice(distance * restaurant.priceByMiles);
+
+              if (!restaurant.deliveryFixed) {
+                setblockDelivery(false);
+                setOtherFees(distance * restaurant.priceByMiles * 100)
+                setDeliveryPrice(distance * restaurant.priceByMiles * 100);
+              }
+
             }
           }
 
@@ -1889,7 +1898,7 @@ const Checkout: React.FC<CheckoutProps> = ({
                     Frais de livraison
                   </Typography>
                   <Typography className="notranslate">{`€${(
-                    (restaurant?.deliveryPrice?.amount || 0) / 100 + deliveryPriceAmount
+                    deliveryPriceAmount / 100
                   ).toLocaleString(undefined, {
                     minimumFractionDigits: 1,
                   })}`}</Typography>
@@ -1915,7 +1924,7 @@ const Checkout: React.FC<CheckoutProps> = ({
                 className="notranslate"
                 style={{ fontWeight: 700 }}
               >{`€${(
-                (estimateTotalPrice(cart) + (otherFees * 100)) /
+                (estimateTotalPrice(cart) + (otherFees)) /
                 100
               ).toLocaleString(undefined, {
                 minimumFractionDigits: 1,

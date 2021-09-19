@@ -21,18 +21,18 @@ export const estimateFoodPrice: (food: FoodInCart) => number = ({
 export const estimateMenuPrice: (menu: MenuInCart, addAmount?: boolean) => number = ({ foods, quantity, item }, addAmount) => {
   if (addAmount) {
     return item.price.amount + quantity *
-    foods.reduce<number>(
-      (p, { food, options }) =>
-        p + (food.price.amount || 0) + estimateOptionPrice(options),
-      0
-    );
+      foods.reduce<number>(
+        (p, { food, options }) =>
+          p + (food.price.amount || 0) + estimateOptionPrice(options),
+        0
+      );
   } else {
     return quantity *
-    foods.reduce<number>(
-      (p, { food, options }) =>
-        p + (food.price.amount || 0) + estimateOptionPrice(options),
-      0
-    );
+      foods.reduce<number>(
+        (p, { food, options }) =>
+          p + (food.price.amount || 0) + estimateOptionPrice(options),
+        0
+      );
   }
 }
 

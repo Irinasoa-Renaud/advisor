@@ -33,6 +33,7 @@ interface Restaurant {
   minPriceIsDelivery: string;
   aEmporter: boolean;
   phoneNumber?: string;
+  deliveryFixed: boolean;
   deliveryPrice?: {
     amount?: number;
     currency?: string;

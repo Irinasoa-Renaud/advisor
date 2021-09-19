@@ -21,10 +21,11 @@ export const estimateCommandPrice: (command: Command) => number = ({
   items,
   commandType,
   restaurant,
+  priceLivraison
 }) =>
   menus.reduce((p, c) => p + estimateMenuPrice(c), 0) +
   items.reduce((p, c) => p + estimateFoodPrice(c), 0) +
-  (commandType === 'delivery' ? restaurant.deliveryPrice.amount : 0);
+  (commandType === 'delivery' ? (+priceLivraison * 100) : 0);
 
 export const estimateFoodPrice: (food: FoodInCommand) => number = ({
   item,
@@ -44,7 +45,7 @@ export const estimateMenuPrice: (menu: MenuInCommand) => number = ({
   type === 'priceless'
     ? 0
     : type === 'per_food'
-    ? quantity *
+      ? quantity *
       foods.reduce<number>(
         (
           p,
@@ -57,7 +58,7 @@ export const estimateMenuPrice: (menu: MenuInCommand) => number = ({
         ) => p + (amount || 0) + estimateOptionPrice(options),
         0,
       )
-    : quantity *
+      : quantity *
       (amount +
         foods.reduce<number>(
           (p, { food: { _id }, options }) =>
