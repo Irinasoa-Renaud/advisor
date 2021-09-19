@@ -43,6 +43,34 @@ const AddEditAccompagnement: React.FC<AddEditAccompagnementProps> = ({
     const { enqueueSnackbar } = useSnackbar();
     const [current, setCurrent] = useState<any>({ ...initialValues });
 
+    console.log("initialValues", initialValues);
+
+    const priority = (a: any[], b: any[]) => {
+
+        console.log("test", {
+            a, b
+        })
+        const array = [];
+
+        if (b.length > 0) {
+
+            for (let i = 0; i < b.length; i++) {
+                array.push(a.filter((items: any) => items._id === b[i])[0])
+            }
+
+            const priority = [...array].concat(a.filter((items: any) => !b.includes(items._id)));
+
+            console.log("priority", priority);
+
+            if (priority.filter((item: any) => item).length) {
+                return priority;
+            }
+
+        }
+
+        return a;
+
+    }
     const handleChange = (e: any) => {
 
         const { name, value } = e.target;
@@ -130,7 +158,7 @@ const AddEditAccompagnement: React.FC<AddEditAccompagnementProps> = ({
                     />
 
                     <Typography variant="h5" gutterBottom>
-                        Nombre
+                        Nombre Maximum
                     </Typography>
 
                     <TextField
@@ -148,10 +176,10 @@ const AddEditAccompagnement: React.FC<AddEditAccompagnementProps> = ({
                     </Typography>
 
                     <InputMenu
-                        listMenu={accompagnement.map((item: any, i: any) => { return { id: i + 1, ...item } })}
+                        listMenu={priority(accompagnement, current.items.map((e: any) => e._id)).map((item: any, i: any) => { return { id: i + 1, ...item } })}
                         disabled={false}
                         setMenu={setAccompagnementItem}
-                        value={accompagnement.filter((item: any) =>
+                        value={priority(accompagnement, current.items.map((e: any) => e._id)).filter((item: any) =>
                             current.items.find((d: any) => item._id === d._id),
                         )}
                     />

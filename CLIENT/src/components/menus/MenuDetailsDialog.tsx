@@ -519,23 +519,43 @@ const MenuDetailsDialog: React.FC<MenuDetailsDialogProps> = ({
         <CloseIcon />
       </Fab>
       <DialogContent className={classes.dialogContent}>
-        <Container>
-          <Typography className={classes.name} variant="h4" component="h1">
-            {item.name}
-          </Typography>
-          <Typography
-            className={clsx(classes.description, 'translate')}
-            variant="body1"
-          >
-            {item.description}
-          </Typography>
-          <Typography
-            className={clsx(classes.foodTypes, 'translate')}
-            variant="body2"
-          >
-            {foodTypes.join(' + ')}
-          </Typography>
-        </Container>
+
+
+        <Grid container={true}>
+
+          <Grid item xs>
+            <Container>
+              <Typography className={classes.name} variant="h4" component="h1">
+                {item.name}
+              </Typography>
+              <Typography
+                className={clsx(classes.description, 'translate')}
+                variant="body1"
+              >
+                {item.description}
+              </Typography>
+
+
+              <Typography
+                className={clsx(classes.foodTypes, 'translate')}
+                variant="body2"
+              >
+                {foodTypes.join(' + ')}
+              </Typography>
+
+
+            </Container>
+          </Grid>
+
+          {console.log("test", item)}
+
+          <Grid item>
+            <Typography className={classes.name} variant="h4" component="h1">
+              {`€ ${(item.price.amount / 100)}`}
+            </Typography>
+          </Grid>
+
+        </Grid>
 
         {!!foods.length &&
           foodTypes.map((type) => (
@@ -549,7 +569,6 @@ const MenuDetailsDialog: React.FC<MenuDetailsDialogProps> = ({
                 {type}
               </Typography>
               <Divider className={classes.divider} />
-              {console.log("foods", foods)}
               {foods
                 .filter(
                   ({ food: { type: { name } } }: any) =>
@@ -574,6 +593,7 @@ const MenuDetailsDialog: React.FC<MenuDetailsDialogProps> = ({
                             (<span>{`€ ${food.price.amount / 100}`}</span>) : ''
                           }
                         />
+
                         <Checkbox
                           checked={
                             !!foodsInCart.find(
@@ -637,7 +657,7 @@ const MenuDetailsDialog: React.FC<MenuDetailsDialogProps> = ({
                                       <Typography variant="body2">{`Choissisez-en jusqu'à ${option.maxOptions}`}</Typography>
                                     </Grid>
 
-                                    <Grid item xs>
+                                    <Grid item>
                                       {OpenCollapse[option.title as any] ? <ExpandLess /> : <ExpandMore />}
                                     </Grid>
 
@@ -902,7 +922,9 @@ const MenuDetailsDialog: React.FC<MenuDetailsDialogProps> = ({
             {isNew(menu.id) ? 'Ajouter au panier' : 'Modifier'}
           </span>
           {(menuState.isShowPrice || menuState.priceType === 'fixed_price') && showGlobalPrice && <span style={{ marginLeft: 'auto' }}>
-            {('€' + estimateMenuPrice(menu) / 100)}
+            {
+              ('€' + (estimateMenuPrice(menu) / 100 + additionalPrice / 100))
+            }
           </span>}
         </Button>
         {!isNew(menu.id) && (

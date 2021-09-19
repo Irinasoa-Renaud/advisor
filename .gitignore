@@ -1,4 +1,5 @@
 **/node_modules
+**/Api/public
 **/fichier
 .eslintcache
 .vscode/extensions.json

@@ -129,6 +129,8 @@ router.get('/', async function(req, res, next) {
 
         }
 
+        console.log("foodDocuments", foods.map(e => e.options))
+
         res.json(foods);
 
     } catch (error) {

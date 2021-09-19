@@ -50,11 +50,11 @@ const Food = new Schema({
     options: [{
         title: String,
         maxOptions: Number,
+        isObligatory: Boolean,
         items: [{
             type: mongoose.Schema.Types.Mixed,
-            //  type: Schema.Types.ObjectId,
-        }, ],
-    }, ],
+        }],
+    }],
 
     note: {
         type: Number,

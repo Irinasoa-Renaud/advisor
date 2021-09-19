@@ -811,7 +811,7 @@ const CommandDetailsDialog: React.FC<CommandDetailsDialogProps> = ({
                 </Typography>
                 <Typography className="notranslate">
                   {PriceFormatter.format({
-                    amount: +command.priceLivraison * 100 || 0,
+                    amount: +command.priceLivraison || 0,
                     currency: 'eur',
                   })}
                 </Typography>

@@ -22,6 +22,7 @@ interface Food {
     title: string;
     maxOptions: number;
     items: Accompaniment[];
+    isObligatory?: boolean;
   }[];
   imageNotContractual: boolean;
   allergene: string[];

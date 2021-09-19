@@ -44,7 +44,7 @@ const headCells: HeadCell<Restaurant>[] = [
   },
   {
     id: 'phoneNumber',
-    label: 'Mobile',
+    label: 'Téléphone',
     disableSorting: true,
   },
   {

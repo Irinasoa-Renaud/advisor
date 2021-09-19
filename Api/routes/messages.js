@@ -1,150 +1,151 @@
 const express = require('express');
 const {
-  INTERNAL_SERVER_ERROR,
-  NOT_FOUND,
-  UNAUTHORIZED,
-  OK,
+    INTERNAL_SERVER_ERROR,
+    NOT_FOUND,
+    UNAUTHORIZED,
+    OK,
 } = require('http-status-codes');
 const { Message } = require('../models');
 const router = express.Router();
-const { authGuard } = require('../middlewares/token');
 
-router.get('/', authGuard, async function (req, res) {
-  const { offset, limit, filter } = req.query;
+router.get('/', async function(req, res) {
 
-  try {
-    const messageDocuments = Message.find(JSON.parse(filter));
+    const { offset, limit, filter } = req.query;
 
-    if (offset) messageDocuments.skip(offset);
+    try {
 
-    if (limit) messageDocuments.limit(limit);
+        const messageDocuments = Message.find(JSON.parse(filter));
 
-    const messages = (await messageDocuments.populate('target')).map((e) =>
-      e.toJSON(),
-    );
+        if (offset) messageDocuments.skip(offset);
 
-    res.json(messages);
-  } catch (error) {
-    res.status(INTERNAL_SERVER_ERROR);
+        if (limit) messageDocuments.limit(limit);
 
-    if (process.env.NODE_ENV === 'development') {
-      console.error(error);
-      res.json(error);
+        const messages = (await messageDocuments.populate('target')).map((e) =>
+            e.toJSON(),
+        );
+
+        res.json(messages);
+    } catch (error) {
+        res.status(INTERNAL_SERVER_ERROR);
+
+        if (process.env.NODE_ENV === 'development') {
+            console.error(error);
+            res.json(error);
+        }
     }
-  }
 });
 
-router.get('/count', authGuard, async function (req, res) {
-  const { filter: filterString = '{}' } = req.query;
+router.get('/count', async function(req, res) {
+    const { filter: filterString = '{}' } = req.query;
 
-  const filter = JSON.parse(filterString);
+    const filter = JSON.parse(filterString);
 
-  try {
-    const count = await Message.find(filter).count();
+    try {
+        const count = await Message.find(filter).count();
 
-    res.json({ count });
-  } catch (error) {
-    res.status(INTERNAL_SERVER_ERROR);
+        res.json({ count });
+    } catch (error) {
+        res.status(INTERNAL_SERVER_ERROR);
 
-    if (process.env.NODE_ENV === 'development') {
-      console.error(error);
-      res.json(error);
+        if (process.env.NODE_ENV === 'development') {
+            console.error(error);
+            res.json(error);
+        }
     }
-  }
 });
 
-router.get('/:id', authGuard, async function (req, res) {
-  const { id } = req.params;
+router.get('/:id', async function(req, res) {
+    const { id } = req.params;
 
-  try {
-    const message = await Message.findById(id).populate('target');
-    if (!message)
-      return res.status(NOT_FOUND).json({ message: 'Message not found' });
+    try {
+        const message = await Message.findById(id).populate('target');
+        if (!message)
+            return res.status(NOT_FOUND).json({ message: 'Message not found' });
 
-    res.json(message.toJSON());
-  } catch (error) {
-    res.status(INTERNAL_SERVER_ERROR);
+        res.json(message.toJSON());
+    } catch (error) {
+        res.status(INTERNAL_SERVER_ERROR);
 
-    if (process.env.NODE_ENV === 'development') {
-      console.error(error);
-      res.json(error);
+        if (process.env.NODE_ENV === 'development') {
+            console.error(error);
+            res.json(error);
+        }
     }
-  }
 });
 
-router.post('/', async function (req, res) {
-  const { name, phoneNumber, email, message, target } = req.body;
+router.post('/', async function(req, res) {
+    const { name, phoneNumber, email, message, target } = req.body;
 
-  try {
-    const newMessage = new Message({
-      name,
-      phoneNumber,
-      email,
-      message,
-      target,
-    });
+    try {
+        const newMessage = new Message({
+            name,
+            phoneNumber,
+            email,
+            message,
+            target,
+        });
 
-    await newMessage.save({
-      validateBeforeSave: true,
-    });
+        await newMessage.save({
+            validateBeforeSave: true,
+        });
 
-    res.json(newMessage.toJSON());
-  } catch (error) {
-    res.status(INTERNAL_SERVER_ERROR);
+        res.json(newMessage.toJSON());
+    } catch (error) {
+        res.status(INTERNAL_SERVER_ERROR);
 
-    if (process.env.NODE_ENV === 'development') {
-      console.error(error);
-      res.json(error);
+        if (process.env.NODE_ENV === 'development') {
+            console.error(error);
+            res.json(error);
+        }
     }
-  }
 });
 
-router.put('/:id/read', authGuard, async function (req, res) {
-  const { id } = req.params;
+router.put('/:id/read', async function(req, res) {
+    const { id } = req.params;
 
-  try {
-    const message = await Message.findById(id);
+    try {
+        const message = await Message.findById(id);
 
-    if (message.target && message.target != String(req.user.id))
-      return res
-        .status(UNAUTHORIZED)
-        .json({ message: 'Only receiver can set message status to read' });
+        if (message.target && message.target != String(req.user.id))
+            return res
+                .status(UNAUTHORIZED)
+                .json({ message: 'Only receiver can set message status to read' });
 
-    message.read = true;
-    message.save({
-      validateBeforeSave: true,
-    });
+        message.read = true;
+        message.save({
+            validateBeforeSave: true,
+        });
 
-    res.json(message.toJSON());
-  } catch (error) {
-    res.send(INTERNAL_SERVER_ERROR);
+        res.json(message.toJSON());
+    } catch (error) {
+        res.send(INTERNAL_SERVER_ERROR);
 
-    if (process.env.NODE_ENV === 'development') {
-      console.error(erorr);
-      res.json(error);
+        if (process.env.NODE_ENV === 'development') {
+            console.error(erorr);
+            res.json(error);
+        }
     }
-  }
 });
 
-router.delete('/:id', authGuard, async function (req, res) {
-  const { id } = req.params;
+router.delete('/:id', async function(req, res) {
+    const { id } = req.params;
 
-  try {
-    const message = await Message.findById(id);
+    try {
+        const message = await Message.findById(id);
 
-    if (!message)
-      return res.status(NOT_FOUND).json({ message: 'Message not found' });
+        if (!message)
+            return res.status(NOT_FOUND).json({ message: 'Message not found' });
 
-    await message.remove();
-    res.json({ message: 'Message deleted successfully' });
-  } catch (error) {
-    res.status(INTERNAL_SERVER_ERROR);
+        await message.remove();
+        res.json({ message: 'Message deleted successfully' });
+    } catch (error) {
+        res.status(INTERNAL_SERVER_ERROR);
 
-    if (process.env.NODE_ENV === 'development') {
-      console.error(error);
-      res.json(error);
+        if (process.env.NODE_ENV === 'development') {
+            console.error(error);
+            res.json(error);
+        }
     }
-  }
 });
 
 module.exports = router;

@@ -45,10 +45,6 @@ const headCells: HeadCell<Accompaniment>[] = [
     label: 'Prix',
   },
   {
-    id: 'isObligatory',
-    label: 'Obligatoire',
-  },
-  {
     id: 'imageURL',
     label: 'Image',
     disableSorting: true,
@@ -268,9 +264,7 @@ const AccompanimentListPage: React.FC = () => {
                 <TableCell>{name}</TableCell>
                 <TableCell>{restaurant?.name}</TableCell>
                 <TableCell>{price?.amount && (+price?.amount / 100)} € </TableCell>
-                <TableCell>
-                  {isObligatory ? 'Oui' : 'Non'}
-                </TableCell>
+
                 <TableImageCell
                   height={50}
                   width={(50 * 16) / 9}

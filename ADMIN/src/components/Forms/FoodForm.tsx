@@ -45,7 +45,7 @@ export type FoodFormType = {
   price: string;
   description: string;
   type: string;
-  options: { title: string; maxOptions: string; items: Accompaniment[] }[];
+  options: { title: string; maxOptions: string; items: Accompaniment[], isObligatory?: boolean }[];
   attributes: any[];
   restaurant: string;
   priority?: number;
@@ -163,6 +163,7 @@ const FoodForm: React.FC<FoodFormProps> = ({
       title: '',
       maxOptions: '0',
       items: [],
+      isObligatory: false
     });
 
     setValues((v) => ({ ...v, options }));
@@ -303,6 +304,8 @@ const FoodForm: React.FC<FoodFormProps> = ({
   }
 
   const setAddEdit = (value: any, index: number) => {
+
+    console.log("setAddEdit", value);
     setInitValue(value);
     setIndex(index);
     setOpenAccompagnement(true)
@@ -632,6 +635,7 @@ const FoodForm: React.FC<FoodFormProps> = ({
                   </Button>
                 </Grid>
               </Grid>
+              {console.log("values.options", values.options)}
               {!!values.options.length && (
                 <>
                   <Box height={theme.spacing(2)} />

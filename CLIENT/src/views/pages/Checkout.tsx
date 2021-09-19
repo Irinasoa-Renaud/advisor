@@ -80,7 +80,6 @@ import 'moment/locale/fr';
 import { Autocomplete } from '@material-ui/lab';
 import { useSelector } from '../../utils/redux';
 import MuiAlert, { AlertProps } from '@material-ui/lab/Alert';
-import PlatRecommander from '../../components/PlatRecommander'
 
 function Alert(props: AlertProps) {
   return <MuiAlert elevation={6} variant="filled" {...props} />;
@@ -215,12 +214,16 @@ const Checkout: React.FC<CheckoutProps> = ({
   // })
 
   const [commandType, setCommandType] = useState<CommandType>(() =>
-    authenticated && restaurant && restaurant.delivery && priceType !== 'priceless' && menus.findIndex(({ item: { type } }) => type === 'priceless') === -1
-      ? 'delivery'
+    authenticated &&
+      restaurant &&
+      restaurant.delivery &&
+      priceType !== 'priceless' &&
+      menus.findIndex(({ item: { type } }) => type === 'priceless') === -1 ? 'delivery'
       : restaurant && restaurant.surPlace
         ? 'on_site'
         : 'takeaway'
   );
+
 
   const [shipAsSoonAsPossible, setShipAsSoonAsPossible] = useState(true);
 
@@ -314,14 +317,13 @@ const Checkout: React.FC<CheckoutProps> = ({
     if (commandType !== 'delivery') {
       setOtherFees(0);
     } else {
-      setOtherFees(restaurant?.deliveryPrice?.amount || 0);
-      setDeliveryPrice(restaurant?.deliveryPrice?.amount || 0);
+      if (restaurant && restaurant.deliveryFixed) {
+        setOtherFees(restaurant?.deliveryPrice?.amount || 0);
+        setDeliveryPrice(restaurant?.deliveryPrice?.amount || 0);
+      }
     }
 
-    if (restaurant && !restaurant.deliveryFixed) {
-      setDeliveryPrice(0);
-      setOtherFees(0);
-    }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [commandType, deliveryPriceAmount]);
 
@@ -413,8 +415,8 @@ const Checkout: React.FC<CheckoutProps> = ({
 
         const listCart = {
           ...cart,
-          totalPrice: totalPrice,
-          priceLivraison: deliveryPriceAmount,
+          totalPrice: totalPrice + deliveryPriceAmount,
+          priceLivraison: (deliveryPriceAmount / 100),
         }
 
         history.push('/order-summary', { ...listCart, code, comment, commandType, shippingTime });
@@ -432,8 +434,6 @@ const Checkout: React.FC<CheckoutProps> = ({
   const handleToken: (token: Token) => Promise<void> = async (token) => {
     try {
       setInProgress(true);
-
-      console.log("handleToken")
 
       const response = await Api.post('/checkout', {
         token,
@@ -769,7 +769,7 @@ const Checkout: React.FC<CheckoutProps> = ({
                             );
                           }
 
-                          if (priceType === 'priceless' || menus.findIndex(({ item: { type } }) => type === 'priceless')) {
+                          if (priceType === 'priceless' || menus.filter(({ item: { type } }) => type === 'priceless').length) {
                             return enqueueSnackbar(
                               'Le menu est sans prix, donc pas de livraison',
                               { variant: 'info' }
@@ -796,17 +796,25 @@ const Checkout: React.FC<CheckoutProps> = ({
                         })}
                         avatar={<DirectionsRun color="inherit" />}
                         label={<span className="translate">À emporter</span>}
-                        onClick={() => setCommandType('takeaway')}
+                        onClick={() => {
+
+                          if (priceType === 'priceless' || menus.filter(({ item: { type } }) => type === 'priceless').length) {
+                            return enqueueSnackbar(
+                              'Le menu est sans prix, donc pas de livraison',
+                              { variant: 'info' }
+                            );
+                          }
+
+                          setCommandType('takeaway')
+                        }}
                       />
                     )}
                   </div>
 
                   <Box height={12} />
 
-                  {console.log("priceType", priceType)}
                   {(commandType === 'delivery') && (priceType) && (
                     <>
-
                       {
                         restaurant && ((+restaurant.minPriceIsDelivery) >= (estimateTotalPrice(cart) / 100))
                           ? (
@@ -1480,7 +1488,7 @@ const Checkout: React.FC<CheckoutProps> = ({
                       <IconButton onClick={() => {
                         removeFood(id)
                         if (foods.length === 1) {
-                          history.push('/home')
+                          restaurant && history.push(`/restaurants/${restaurant._id}`);
                         }
                       }
                       }  >
@@ -1718,7 +1726,7 @@ const Checkout: React.FC<CheckoutProps> = ({
                             <IconButton onClick={() => {
                               removeMenu(id)
                               if (menus.length === 1) {
-                                history.push('/home')
+                                restaurant && history.push(`/restaurants/${restaurant._id}`);
                               }
                             }}>
                               <DeleteIcon />
@@ -1977,17 +1985,7 @@ const Checkout: React.FC<CheckoutProps> = ({
           </Grid>
         </Grid>
       </Container>
-      <div style={{
-        margin: '2vh auto',
-        width: '90%'
-      }}>
-        <PlatRecommander
-          clsx={clsx}
-          Link={Link}
-          title="Plats recommander"
 
-        />
-      </div>
       <Footer mini />
 
       <Dialog

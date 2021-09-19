@@ -208,7 +208,9 @@ const FullWidthTabs: React.FC<FullWidthTabsProps> = ({
   };
 
   const drinks = foods.filter(
-    ({ type: { name } }) => (name as string) === 'drink'
+    ({ type: { name } }) => (name as string).toLocaleLowerCase().includes('drink') ||
+      (name as string).toLocaleLowerCase().includes('boisson') ||
+      (name as string).toLocaleLowerCase().includes('jus')
   );
 
   const notDrinks = foods.filter(

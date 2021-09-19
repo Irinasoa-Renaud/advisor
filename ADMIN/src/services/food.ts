@@ -101,6 +101,9 @@ export const getFoodWithId: (id: string, lang: Lang) => Promise<Food> = async (
 
 const getFormData: (data: Partial<FoodFormType>) => FormData = (data) => {
   const formData = new FormData();
+
+  data && console.log("====", data.options && data.options)
+
   formData.append('isAvailable', JSON.stringify(data.isAvailable))
   data.priority && formData.append('priority', JSON.stringify(data.priority));
   data.description && formData.append('description', data.description);
@@ -114,20 +117,14 @@ const getFormData: (data: Partial<FoodFormType>) => FormData = (data) => {
         currency: 'eur',
       }),
     );
-  data.attributes &&
-    formData.append('attributes', JSON.stringify(data.attributes));
+  data.attributes && formData.append('attributes', JSON.stringify(data.attributes));
+
   data.restaurant && formData.append('restaurant', data.restaurant);
-  data.options &&
-    formData.append(
-      'options',
-      JSON.stringify(
-        data.options.map(({ maxOptions, ...data }) => ({
-          ...data,
-          maxOptions: Number(maxOptions),
-        })),
-      ),
-    );
+
+  data.options && formData.append('options', JSON.stringify(data.options));
+
   data.image && formData.append('image', data.image);
+
   typeof data.statut !== 'undefined' &&
     formData.append('statut', JSON.stringify(data.statut));
   typeof data.imageNotContractual !== 'undefined' &&

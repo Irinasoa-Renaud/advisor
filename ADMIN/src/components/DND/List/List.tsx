@@ -73,6 +73,7 @@ const Container: FC<any> = (props: any) => {
 		<>
 			<DndProvider backend={HTML5Backend}>
 
+				{console.log("list", list)}
 				<div style={style}>
 					{list.map((card: any, index: any) => <div key={card.id} onClick={() => setAddEdit(card, index)}>
 						<Card

@@ -218,6 +218,7 @@ const DeliveryCommandList: React.FC = () => {
               revoked,
               payed: { status: payed },
               optionLivraison,
+              priceLivraison
             } = command;
 
             return (

@@ -21,7 +21,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import { LocationOn, Phone } from '@material-ui/icons';
 import { green, orange, red } from '@material-ui/core/colors';
 import { estimateMenuPrice } from '../../services/cart';
-import { CommandType } from '../../models/Command.model';
+import PlatRecommander from '../../components/PlatRecommander'
 import clsx from 'clsx';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
@@ -82,7 +82,6 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
 
   const theme = useTheme();
 
-  console.log("priceLivraison", priceLivraison)
   if (!command) return <Redirect to="/home" />;
 
   return (
@@ -509,7 +508,6 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
             </>
           )}
 
-          {console.log("command", command)}
 
           {command.commandType === 'delivery' && (<Grid container justify="space-between" alignItems="center">
             <Grid item>
@@ -517,7 +515,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
             </Grid>
             <Grid item>
               <Typography>{`€${(
-                (priceLivraison  || 0)
+                (priceLivraison || 0)
               ).toLocaleString(undefined, {
                 minimumFractionDigits: 1,
               })}`}</Typography>
@@ -588,6 +586,16 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
           </Typography>
         </Grid>
       </Container>
+      <div style={{
+        margin: '2vh auto',
+        width: '90%'
+      }}>
+        <PlatRecommander
+          clsx={clsx}
+          Link={Link}
+          title="Plats recommander"
+        />
+      </div>
       <Footer mini />
     </>
   );
