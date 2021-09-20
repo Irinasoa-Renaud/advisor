@@ -245,7 +245,7 @@ const MenuForm: React.FC<MenuFormProps> = ({
                 Sélectionner un type
               </MenuItem>
               <MenuItem value="per_food">Prix par plats</MenuItem>
-              <MenuItem value="priceless">Sans prix</MenuItem>
+              {/* <MenuItem value="priceless">Sans prix</MenuItem> */}
               <MenuItem value="fixed_price">Prix fixe</MenuItem>
             </Select>
             <FormHelperText>{errors.type}</FormHelperText>
