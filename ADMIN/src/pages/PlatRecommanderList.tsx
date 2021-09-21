@@ -53,6 +53,7 @@ const PlatRecommanderListPage: React.FC = () => {
   const [saving, setSaving] = useState<boolean>(false);
   const [selected, setSelected] = useState<string[]>([]);
   const [updating, setUpdating] = useState<boolean>(false);
+  const [activeOndragDrop, setActiveOndragDrop] = useState<boolean>(false);
   const modif = useRef<PlatRecommanderFormType>();
 
   const { enqueueSnackbar } = useSnackbar();
@@ -162,6 +163,13 @@ const PlatRecommanderListPage: React.FC = () => {
     fetch();
   }, [fetch]);
 
+  const setArraySelected = (data: any) => {
+    if (data.restaurant !== "") {
+      setActiveOndragDrop(true);
+    }
+  }
+
+
   return (
     <>
       <PageHeader title="Plats recommander" subTitle="Liste des plats recommander" icon={ListIcon} />
@@ -171,6 +179,7 @@ const PlatRecommanderListPage: React.FC = () => {
           records={records}
           selected={selected}
           onSelectedChange={setSelected}
+          setArraySelected={setArraySelected}
           onDeleteClick={() => {
             setUpdating(true);
             handleDeleteSelection().finally(() => setUpdating(false));
@@ -183,7 +192,7 @@ const PlatRecommanderListPage: React.FC = () => {
             selectableRows: isAdmin,
             orderBy: 'priority',
             order: 'asc',
-            enableDragAndDrop: true,
+            enableDragAndDrop: activeOndragDrop,
             hasActionsColumn: true,
             filters: [
               {

@@ -65,11 +65,11 @@ const AdminMessageForm: React.FC<CategoryFormProps> = ({
   useEffect(() => {
     setLoadingResto(true);
     getRestaurants()
-        .then(data => setRestoOptions(data || []))
-        .catch(e => {
-            enqueueSnackbar('Erreur lors du chargement des restos', {variant: 'error'})
-        })
-        .finally(() => setLoadingResto(false))
+      .then(data => setRestoOptions(data || []))
+      .catch(e => {
+        enqueueSnackbar('Erreur lors du chargement des restos', { variant: 'error' })
+      })
+      .finally(() => setLoadingResto(false))
   }, [enqueueSnackbar])
 
   return (
@@ -144,10 +144,24 @@ const AdminMessageForm: React.FC<CategoryFormProps> = ({
           xs={12}
           spacing={2}
         >
+          {restoOptions.length !== values.target.length && (
+            <Button variant="contained" color="secondary" onClick={() => {
+              setValues((old) => {
+                old.target = restoOptions.map((v: any) => v);
+                return { ...old };
+              });
+            }}>
+              sélectionné tout les restaurants
+            </Button>
+          )}
+
+          <Box width={10} />
+
           <Button variant="contained" color="default" onClick={onCancel}>
             Annuler
           </Button>
           <Box width={10} />
+
           <Button variant="contained" color="primary" type="submit">
             {!saving ? (
               'Enregistrer'

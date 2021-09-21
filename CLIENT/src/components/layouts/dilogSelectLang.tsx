@@ -7,7 +7,6 @@ import ListItemText from '@material-ui/core/ListItemText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Dialog from '@material-ui/core/Dialog';
 
-
 export interface IDialogLang {
     listLang: any;
     changeLang: (data: any) => void;
@@ -57,7 +56,7 @@ const DialogLang = (props: any) => {
 
         }
 
-    },[setOpen])
+    }, [setOpen])
 
     const handleClose = (value: string) => {
         setOpen(false);

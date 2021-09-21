@@ -62,9 +62,7 @@ const PlatRecommander: React.FC<any> = (props) => {
 
     useEffect(() => {
         getFoods({
-            limit: 6,
             lang: 'fr',
-            searchCategory: 'popular',
         })
             .then((data) => {
                 setPopularFoods(data);
@@ -73,7 +71,9 @@ const PlatRecommander: React.FC<any> = (props) => {
                 enqueueSnackbar('Erreur lors du chargement des plat populaires');
             });
     }, [enqueueSnackbar]);
+
     // PlatReco
+
     useEffect(() => {
         if (!loadingPopularFoods) {
             setLoadingPopularFoods(true);
@@ -85,7 +85,6 @@ const PlatRecommander: React.FC<any> = (props) => {
                         .map((item: any) => item.food._id)
                     const recommande = [].concat(...array);
                     setFoodsId(recommande);
-                    console.log("PLAT RECOMMANDER ICI TEST........", recommande);
                     setLoadingPopularFoods(false);
                 })
                 .catch(() => {
@@ -103,7 +102,8 @@ const PlatRecommander: React.FC<any> = (props) => {
             arrayNew.push(array.filter((items: any) => items._id === id[i])[0])
         }
 
-        return arrayNew;
+
+        return arrayNew
 
     }
 
@@ -155,14 +155,14 @@ const PlatRecommander: React.FC<any> = (props) => {
                     )}
                 </div>
             </div>
+
             {loadingPopularFoods ? (
                 <Loader />
             ) : !popularFoods.length ? (
                 <NoResult />
             ) : (
                 <SliderContainer direction="horizontal" position={popularFoodSection}>
-                    {getChunks<Food>(filter(popularFoods, foodsId)
-                        .filter((items: any) => items.statut), chunkSize)
+                    {getChunks(filter(popularFoods, foodsId), chunkSize)
                         .map((foods, i) => (
                             <SliderSection index={i} key={i}>
                                 <Grid container spacing={4} style={{ padding: '24px' }}>
@@ -177,9 +177,6 @@ const PlatRecommander: React.FC<any> = (props) => {
                         ))}
                 </SliderContainer>
             )}
-
-
-
         </>
     );
 };

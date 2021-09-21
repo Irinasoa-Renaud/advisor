@@ -60,85 +60,85 @@ const DialogActions = withStyles((theme: Theme) => ({
 }))(MuiDialogActions);
 
 const AdminMessageModal = () => {
-    const dispatch = useDispatch();
-    const {enqueueSnackbar} = useSnackbar();
-    const theme = useTheme();
-    const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  const dispatch = useDispatch();
+  const { enqueueSnackbar } = useSnackbar();
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
-    const {loged}: any = useSelector(({event}: any) => ({loged: event.loged}));
-    const { isRestaurantAdmin, restaurant } = useAuth();
+  const { loged }: any = useSelector(({ event }: any) => ({ loged: event.loged }));
+  const { isRestaurantAdmin, restaurant } = useAuth();
 
-    const [index, setIndex] = useState<number>(0);
-    const [messages, setMessages] = useState<AdminMessage[]>([]);
-    const [loading, setLoading] = useState<boolean>(false);
+  const [index, setIndex] = useState<number>(0);
+  const [messages, setMessages] = useState<AdminMessage[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
 
-    useEffect(() => {
-        const load = () => {
-            setLoading(true);
-            getRestoMessages(restaurant?._id || '')
-                .then((data) => setMessages(data.filter((mess) => {
-                    return mess.read.findIndex((restoId) => restoId === restaurant?._id) === -1
-                })))
-                .catch((e) => enqueueSnackbar('Erreur lors du chargement du message', {variant: 'error'}))
-                .finally(() => setLoading(false));
-        }
+  useEffect(() => {
+    const load = () => {
+      setLoading(true);
+      getRestoMessages(restaurant?._id || '')
+        .then((data) => setMessages(data.filter((mess) => {
+          return mess.read.findIndex((restoId) => restoId === restaurant?._id) === -1
+        })))
+        //   .catch((e) => enqueueSnackbar('Erreur lors du chargement du message', {variant: 'error'}))
+        .finally(() => setLoading(false));
+    }
 
-        if (isRestaurantAdmin && loged && restaurant?._id) load();
-    }, [restaurant?._id, isRestaurantAdmin, loged, enqueueSnackbar])
+    if (isRestaurantAdmin && loged && restaurant?._id) load();
+  }, [restaurant?._id, isRestaurantAdmin, loged, enqueueSnackbar])
 
-    const handleClose = useCallback(async () => {
-        await dispatch(setLoged(false));
-        messages?.forEach(async (mess) => {
-            await readMessage(mess._id, restaurant?._id || '');
-        })
-    }, [restaurant?._id, dispatch, messages]);
+  const handleClose = useCallback(async () => {
+    await dispatch(setLoged(false));
+    messages?.forEach(async (mess) => {
+      await readMessage(mess._id, restaurant?._id || '');
+    })
+  }, [restaurant?._id, dispatch, messages]);
 
-    const next = useCallback(() => {
-        setIndex(index + 1);
-    }, [index]);
+  const next = useCallback(() => {
+    setIndex(index + 1);
+  }, [index]);
 
-    const prev = useCallback(() => {
-        setIndex(index - 1);
-    }, [index]);
+  const prev = useCallback(() => {
+    setIndex(index - 1);
+  }, [index]);
 
-    return (
-        <>
-            {messages.length > 0 && (
-                <Dialog 
-                    fullScreen={fullScreen}
-                    maxWidth="md" 
-                    fullWidth 
-                    onClose={handleClose} 
-                    aria-labelledby="customized-dialog-title" 
-                    open={loged}
-                >
-                    <DialogTitle id="customized-dialog-title" title="Message de l'administrateur" />
-                    <DialogContent dividers>
-                        {loading 
-                        ?(
-                            <Loading open />
-                         ) 
-                        :(
-                            <Typography gutterBottom>
-                                {messages[index]?.message}
-                            </Typography>
-                        )}
-                    </DialogContent>
-                    <DialogActions>
-                    <Button disabled={index === 0 || index === messages.length - 1} onClick={prev} color="primary">
-                        Precédant
-                    </Button>    
-                    <Button disabled={index === messages.length - 1} onClick={next} color="primary">
-                        Suivant
-                    </Button>
-                    <Button disabled={index !== messages.length - 1} onClick={handleClose} color="primary">
-                        Fermer
-                    </Button>
-                    </DialogActions>
-                </Dialog>
-            )}
-        </>
-    )
+  return (
+    <>
+      {messages.length > 0 && (
+        <Dialog
+          fullScreen={fullScreen}
+          maxWidth="md"
+          fullWidth
+          onClose={handleClose}
+          aria-labelledby="customized-dialog-title"
+          open={loged}
+        >
+          <DialogTitle id="customized-dialog-title" title="Message de l'administrateur" />
+          <DialogContent dividers>
+            {loading
+              ? (
+                <Loading open />
+              )
+              : (
+                <Typography gutterBottom>
+                  {messages[index]?.message}
+                </Typography>
+              )}
+          </DialogContent>
+          <DialogActions>
+            <Button disabled={index === 0 || index === messages.length - 1} onClick={prev} color="primary">
+              Precédant
+            </Button>
+            <Button disabled={index === messages.length - 1} onClick={next} color="primary">
+              Suivant
+            </Button>
+            <Button disabled={index !== messages.length - 1} onClick={handleClose} color="primary">
+              Fermer
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
+    </>
+  )
 };
 
 export default AdminMessageModal;

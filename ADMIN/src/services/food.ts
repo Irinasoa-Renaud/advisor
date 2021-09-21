@@ -102,9 +102,7 @@ export const getFoodWithId: (id: string, lang: Lang) => Promise<Food> = async (
 const getFormData: (data: Partial<FoodFormType>) => FormData = (data) => {
   const formData = new FormData();
 
-  data && console.log("====", data.options && data.options)
-
-  formData.append('isAvailable', JSON.stringify(data.isAvailable))
+  formData.append('isAvailable', JSON.stringify(data.isAvailable));
   data.priority && formData.append('priority', JSON.stringify(data.priority));
   data.description && formData.append('description', data.description);
   data.name && formData.append('name', JSON.stringify({ fr: data.name }));
@@ -117,20 +115,28 @@ const getFormData: (data: Partial<FoodFormType>) => FormData = (data) => {
         currency: 'eur',
       }),
     );
-  data.attributes && formData.append('attributes', JSON.stringify(data.attributes));
-
+  data.attributes &&
+    formData.append('attributes', JSON.stringify(data.attributes));
+  data.allergene &&
+    formData.append('allergene', JSON.stringify(data.allergene));
   data.restaurant && formData.append('restaurant', data.restaurant);
-
-  data.options && formData.append('options', JSON.stringify(data.options));
-
+  data.options &&
+    formData.append(
+      'options',
+      JSON.stringify(
+        data.options.map(({ maxOptions, ...data }) => ({
+          ...data,
+          maxOptions: Number(maxOptions),
+        })),
+      ),
+    );
   data.image && formData.append('image', data.image);
-
   typeof data.statut !== 'undefined' &&
     formData.append('statut', JSON.stringify(data.statut));
   typeof data.imageNotContractual !== 'undefined' &&
     formData.append('imageNotContractual', JSON.stringify(data.imageNotContractual));
-  typeof data.allergene !== 'undefined' &&
-    formData.append('allergene', JSON.stringify(data.allergene));
+  // typeof data.allergene !== 'undefined' &&
+  //   formData.append('allergene', JSON.stringify(data.allergene));
 
   return formData;
 };
@@ -158,16 +164,6 @@ export const updateFood: (
   });
 };
 
-export const updateDragDrop: (
-  id: string,
-  data: Partial<FoodFormType>,
-) => Promise<void> = async (id, data) => {
-
-  Api.put(`/foods/dragDrop/${id}`, {
-    priority: data.priority,
-  });
-
-};
 
 export const updateStatus: (
   id: string,
@@ -179,6 +175,18 @@ export const updateStatus: (
   });
 
 };
+
+export const updateDragDrop: (
+  id: string,
+  data: Partial<FoodFormType>,
+) => Promise<void> = async (id, data) => {
+
+  Api.put(`/foods/dragDrop/${id}`, {
+    priority: data.priority,
+  });
+
+};
+
 
 export const deleteFood: (id: string) => Promise<void> = (id) =>
   Api.delete(`/foods/${id}`);

@@ -36,6 +36,62 @@ export const estimateMenuPrice: (menu: MenuInCart, addAmount?: boolean) => numbe
   }
 }
 
+export const estimateMenuPricefixed_price: (menu: MenuInCart, addAmount?: boolean) => number = ({ foods, quantity, item }, addAmount) => {
+
+  return quantity *
+    foods.reduce<number>(
+      (p, { food, options }) =>
+        p + estimateOptionPrice(options),
+      0
+    );
+}
+
+
+export const estimateMenuPriceOption: (menu: any, addAmount?: boolean) => number = ({ foods, quantity, item, amount_price }, addAmount) => {
+
+  const optionList: any[] = foods.map((item: any) => item.options
+    .map((item: any) => item.items)
+    .map((item: any) => item)
+  )[0].map((item: any) => item
+    .map((item: any) => item)
+  )
+
+  const optionFilter = [];
+
+  for (let i = 0; i < optionList.length; i++) {
+
+    if (optionList[i].length > 0) {
+
+      for (let b = 0; b < optionList[i].length; b++) {
+
+        if (optionList[i][b]) {
+          optionFilter.push(optionList[i][b]);
+        }
+
+      }
+
+    }
+
+  }
+
+  const additionalPrice = Object.keys(foods).reduce(function (previous, key) {
+    return previous + foods[key as any].food.additionalPrice.amount;
+  }, 0);
+
+  const totalOption = optionFilter.length ? optionFilter.map((item: any) => item.item.price.amount).reduce((a: any, b: any) => a + b) : 0
+
+  if (addAmount) {
+
+    return item.price.amount + (quantity * ((additionalPrice + totalOption + amount_price) / 100))
+
+  } else {
+
+    return (quantity * ((additionalPrice + totalOption + amount_price) / 100))
+
+  }
+
+}
+
 export const estimateTotalPrice: (cart: CartState) => number = (cart) => {
   let total = 0;
 
@@ -43,7 +99,7 @@ export const estimateTotalPrice: (cart: CartState) => number = (cart) => {
 
   cart.menus.forEach((menu) => {
     if (menu.item.type === 'fixed_price') {
-      total += estimateMenuPrice(menu, true)
+      total += estimateMenuPricefixed_price(menu, true)
     } else {
       total += estimateMenuPrice(menu)
     }

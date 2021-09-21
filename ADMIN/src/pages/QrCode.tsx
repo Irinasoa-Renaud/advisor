@@ -267,6 +267,13 @@ const QRCodePage: React.FC = () => {
                     />
                   )}
                 />
+                <Button variant="contained" color="secondary" onClick={() => {
+                  setValues((old) => ({
+                    ...old, multipleLangue: langs.map((v: any) => v.code)
+                  }));
+                }}>
+                  sélectionné tout les Langue
+                </Button>
               </>
             )}
           </Grid>

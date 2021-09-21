@@ -31,10 +31,8 @@ const RestoRecommnader: React.FC = () => {
 
         getRestoRecommander()
             .then((data) => {
-                console.log("RESTO RECOMMANDER ICI........", data)
                 setRestoReco(data)
                 setLoadingRestoRecommander(false)
-
             })
             .catch(() => {
                 enqueueSnackbar('Erreur lors du chargement des restaurants recommander');

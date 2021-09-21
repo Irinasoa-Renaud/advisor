@@ -37,7 +37,7 @@ import Food from '../../models/Food.model';
 import { connect, MapStateToProps } from 'react-redux';
 import RootState from '../../redux/types';
 import DeleteButton from '../DeleteButton';
-import { estimateMenuPrice } from '../../services/cart';
+import { estimateMenuPrice, estimateMenuPriceOption } from '../../services/cart';
 import Accompaniment from '../../models/Accompaniment.model';
 import { v4 as uuidv4 } from 'uuid';
 import logger from 'use-reducer-logger';
@@ -547,11 +547,10 @@ const MenuDetailsDialog: React.FC<MenuDetailsDialogProps> = ({
             </Container>
           </Grid>
 
-          {console.log("test", item)}
 
           <Grid item>
             <Typography className={classes.name} variant="h4" component="h1">
-              {`€ ${(item.price.amount / 100)}`}
+              {menuState.priceType === 'fixed_price' && `€ ${(item.price.amount / 100)}`}
             </Typography>
           </Grid>
 
@@ -575,7 +574,7 @@ const MenuDetailsDialog: React.FC<MenuDetailsDialogProps> = ({
                     (typeof name === 'string' && name === type) ||
                     (name as { [key: string]: string }).fr === type
                 )
-                .sort((a: any, b: any) => a.food.priority - b.food.priority)
+                //      .sort((a: any, b: any) => a.food.priority - b.food.priority)
                 .map(({ food, additionalPrice }: any) => (
                   <Card
                     className={classes.foodCard}
@@ -922,9 +921,10 @@ const MenuDetailsDialog: React.FC<MenuDetailsDialogProps> = ({
             {isNew(menu.id) ? 'Ajouter au panier' : 'Modifier'}
           </span>
           {(menuState.isShowPrice || menuState.priceType === 'fixed_price') && showGlobalPrice && <span style={{ marginLeft: 'auto' }}>
-            {
-              ('€' + (estimateMenuPrice(menu) / 100 + additionalPrice / 100))
-            }
+            {menuState.priceType === 'fixed_price' ? ('€' + estimateMenuPriceOption({
+              ...menu,
+              amount_price: item.price.amount
+            } as any)) : ('€' + estimateMenuPrice(menu) / 100)}
           </span>}
         </Button>
         {!isNew(menu.id) && (

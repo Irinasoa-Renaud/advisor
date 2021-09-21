@@ -186,14 +186,15 @@ const FoodForm: React.FC<FoodFormProps> = ({
 
   useEffect(() => {
     setLoadingTypes(true);
-    let filter = undefined;
+    let filter = { restaurant: values.restaurant };
     if (isRestaurantAdmin && restaurant) {
-      filter = { restaurant: restaurant._id }
+      filter = { restaurant: restaurant._id || values.restaurant }
     } else if (!isRestaurantAdmin && selectedResto) {
-      filter = { restaurant: selectedResto?._id }
+      filter = { restaurant: selectedResto?._id || values.restaurant }
     }
     getFoodTypes(filter)
       .then((data) => {
+
         setTypeOptions(data)
       })
       .finally(() => setLoadingTypes(false));
@@ -635,12 +636,10 @@ const FoodForm: React.FC<FoodFormProps> = ({
                   </Button>
                 </Grid>
               </Grid>
-              {console.log("values.options", values.options)}
               {!!values.options.length && (
                 <>
                   <Box height={theme.spacing(2)} />
                   <Grid container spacing={2}>
-
                     <DnDList
                       updateList={(value: any) => {
                         setOption(value);

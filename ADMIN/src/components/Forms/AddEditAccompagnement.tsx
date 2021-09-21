@@ -41,15 +41,14 @@ const AddEditAccompagnement: React.FC<AddEditAccompagnementProps> = ({
 
     const theme = useTheme();
     const { enqueueSnackbar } = useSnackbar();
-    const [current, setCurrent] = useState<any>({ ...initialValues });
+    const [current, setCurrent] = useState<any>({
+        ...initialValues,
+    });
 
     console.log("initialValues", initialValues);
 
     const priority = (a: any[], b: any[]) => {
 
-        console.log("test", {
-            a, b
-        })
         const array = [];
 
         if (b.length > 0) {
@@ -59,8 +58,6 @@ const AddEditAccompagnement: React.FC<AddEditAccompagnementProps> = ({
             }
 
             const priority = [...array].concat(a.filter((items: any) => !b.includes(items._id)));
-
-            console.log("priority", priority);
 
             if (priority.filter((item: any) => item).length) {
                 return priority;
@@ -96,7 +93,6 @@ const AddEditAccompagnement: React.FC<AddEditAccompagnementProps> = ({
         setCurrent({
             ...current,
             items: e
-            //     .map((item: any) => item._id)
         })
 
     }

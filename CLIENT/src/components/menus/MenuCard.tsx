@@ -108,7 +108,7 @@ interface MenuCardDispatchProps {
 }
 
 interface MenuCardOwnProps {
-  item: Menu;
+  item: any;
   showGlobalPrice?: boolean;
 }
 
@@ -236,7 +236,12 @@ const MenuCard: React.FC<MenuCardProps> = ({
       </CardBadge>
 
       <MenuDetailsDialogProps
-        item={item}
+        item={{
+          ...item,
+          foods: item.foods.map((item: any, i: any) => {
+            return { ...item, priority: i }
+          })
+        }}
         open={open}
         onClose={onDetailsClose}
         restaurant={restaurant || undefined}

@@ -82,7 +82,7 @@ const cartReducer: Reducer<CartState, CartActionTypes> = (
       if (!newState.foods.length) newState.priceless = false;
 
       if (!newState.totalCount) newState.restaurant = null;
-      
+
       sessionStorage.setItem('cart', JSON.stringify(newState));
 
       return newState;
@@ -129,7 +129,7 @@ const cartReducer: Reducer<CartState, CartActionTypes> = (
       };
 
       newState.totalPrice = estimateTotalPrice(newState);
-      
+
       if (!newState.totalCount) newState.restaurant = null;
 
       sessionStorage.setItem('cart', JSON.stringify(newState));

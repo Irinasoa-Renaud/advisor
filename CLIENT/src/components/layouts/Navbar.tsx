@@ -82,6 +82,7 @@ import {
   updateMenuInCart,
 } from '../../redux/actions/cart';
 import { estimateFoodPrice, estimateMenuPrice } from '../../services/cart';
+import MiniFab from '../MiniFab';
 import Restaurant from '../../models/Restaurant.model';
 import FoodDetailsDialog from '../foods/FoodDetailsDialog';
 import useEffectOnUpdate from '../../hooks/useEffectOnUpdate';
@@ -631,7 +632,7 @@ const Navbar: React.FC<NavbarProps> = ({
         id="cart-details"
         open={!!cartDetailsAnchorEl}
         anchorEl={cartDetailsAnchorEl}
-        placement="bottom-end"
+        placement="top-end"
         transition
         style={{ zIndex: 10000 }}
       >
@@ -986,6 +987,41 @@ const Navbar: React.FC<NavbarProps> = ({
           <Banner />
         </div>
       </SwipeableDrawer>
+
+      {!isMobile && !hideCart && !searching && totalCount > 0 && (
+
+        <div style={{
+          position: 'fixed',
+          top: '85%',
+          display: 'block',
+          float: 'right',
+          zIndex: 10000,
+          right: '3%',
+          fontSize: '3vh',
+        }}>
+          <MiniFab
+            color="primary"
+            style={{
+              width: '7vh',
+              height: '7vh'
+            }}
+            onClick={(e) =>
+              Boolean(cartDetailsAnchorEl)
+                ? setCartDetailsAnchorEl(null)
+                : setCartDetailsAnchorEl(e.currentTarget)
+            }
+          >
+            <StyledBadge
+              badgeContent={totalCount}
+              color="primary"
+              showZero
+            >
+              <ShoppingCartIcon />
+            </StyledBadge>
+          </MiniFab>
+
+        </div>
+      )}
     </>
   );
 };

@@ -371,6 +371,7 @@ const FullWidthTabs: React.FC<FullWidthTabsProps> = ({
                         lg={12}
                         xl={12}
                       >
+                        {console.log("menu", menu)}
                         <MenuCard showGlobalPrice={priceType !== 'priceless'} item={menu} />
                       </Grid>
                     ))

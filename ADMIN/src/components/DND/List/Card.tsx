@@ -11,6 +11,7 @@ import {
 import {
   Close,
 } from '@material-ui/icons';
+import { Autocomplete } from '@material-ui/lab';
 import DndInput from '../Input'
 
 const style = {
@@ -118,6 +119,27 @@ export const Card: FC<CardProps> = ({
     },
   })
 
+  const priority = (a: any[], b: any[]) => {
+
+    const array = [];
+
+    if (b.length > 0) {
+
+      for (let i = 0; i < b.length; i++) {
+        array.push(a.filter((items: any) => items._id === b[i])[0])
+      }
+      const priority = [...array].concat(a.filter((items: any) => !b.includes(items._id)));
+
+      if (priority.filter((item: any) => item).length) {
+        return priority;
+      }
+
+    }
+
+    return a;
+
+  }
+
   const [{ isDragging }, drag] = useDrag({
     type: ItemTypes.CARD,
     item: () => {
@@ -174,59 +196,26 @@ export const Card: FC<CardProps> = ({
 
         <Grid item xs={6} style={{ display: 'flex' }}>
 
-          {/* <Autocomplete
-			fullWidth
-			multiple
-			filterSelectedOptions
-			style={{ flexGrow: 2 }}
-			noOptionsText="Aucun choix disponible"
-			loading={loadingAccompaniments}
-			options={accompanimentOptions}
-			disabled={!selectedResto && disableAll}
-			getOptionLabel={(option) => option.name}
-			value={accompanimentOptions.filter(({ _id }) =>
-			  values.options[i].items.find((d) => d._id === _id),
-			)}
-			onChange={(_, v) => {
-			  const { options } = values;
-			  options[i].items = v;
-			  if (v.length > optionsLength) {
-				setCurrentOption(v[v.length - 1])
-				setCurrentAcc({ title: options[i].title, index: i });
-				setUpdatePrice(true);
-				const { _id, name, price, isObligatory } = v[v.length - 1];
-  
-				modif.current = {
-				  _id,
-				  name,
-				  price: String((price?.amount || 0) / 100),
-				  isObligatory,
-				};
-			  }
-			  setOptionsLength(v.length)
-			  setValues((v) => ({ ...v, options }));
-			}}
-			renderInput={(params) => (
-			  <TextField
-				{...params}
-				variant="outlined"
-				placeholder="Accompagnement"
-			  />
-			)}
-		  /> 
-          */}
-
-          <DndInput
-            key={index}
-            listAccompagnement={accompanimentOptions}
-            setUpdatePrice={setUpdatePrice}
-            setCurrentOption={setCurrentOption}
-            disabled={disabled}
-            index={index}
-            setAccompagnement={setAccompagnement}
-            updatePrice={updatePrice}
-            value={html?.items || []}
-
+          <Autocomplete
+            fullWidth
+            multiple
+            filterSelectedOptions
+            style={{ flexGrow: 2 }}
+            noOptionsText="Aucun choix disponible"
+            loading={false}
+            options={accompanimentOptions}
+            disabled={true}
+            getOptionLabel={(option: any) => option.name}
+            value={priority(accompanimentOptions, html?.items.map((item: any) => item._id)).filter(({ _id }) =>
+              html?.items.find((d: any) => d._id === _id),
+            )}
+            renderInput={(params: any) => (
+              <TextField
+                {...params}
+                variant="outlined"
+                placeholder="Accompagnement"
+              />
+            )}
           />
 
           <div style={{ marginLeft: theme.spacing(1) }}>

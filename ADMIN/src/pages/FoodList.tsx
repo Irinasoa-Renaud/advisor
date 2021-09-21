@@ -117,27 +117,30 @@ const FoodListPage: React.FC = () => {
   }, [enqueueSnackbar, isRestaurantAdmin, restaurant?._id]);
 
   const saveData = useCallback(
-    (data: FoodFormType) => {
+    async (data: FoodFormType) => {
       setSaving(true);
-      if (modif.current && data._id)
-        updateFood(data._id, data)
-          .then(() => {
-            enqueueSnackbar('Plat modifié avec succès', {
-              variant: 'success',
-            });
-            setOpenForm(false);
-            EventEmitter.emit('REFRESH');
-          })
-          .catch(() => {
-            enqueueSnackbar('Erreur lors de la modification', {
-              variant: 'error',
-            });
-          })
-          .finally(() => {
-            modif.current = undefined;
-            setSaving(false);
+      if (modif.current && data._id) {
+
+        try {
+          await updateFood(data._id, data)
+
+          enqueueSnackbar('Plat modifié avec succès', {
+            variant: 'success',
           });
-      else
+
+
+          EventEmitter.emit('REFRESH');
+        } catch (err: any) {
+          enqueueSnackbar('Erreur lors de la modification', {
+            variant: 'error',
+          });
+        } finally {
+          modif.current = undefined;
+          setSaving(false);
+        }
+
+
+      } else {
         addFood(data)
           .then(() => {
             enqueueSnackbar('Plat ajouté avec succès', {
@@ -154,6 +157,8 @@ const FoodListPage: React.FC = () => {
           .finally(() => {
             setSaving(false);
           });
+      }
+
     },
     [enqueueSnackbar],
   );
@@ -184,10 +189,11 @@ const FoodListPage: React.FC = () => {
       restaurant: restaurant?._id || '',
       attributes: attributes.map((item: any) => item._id),
       allergene: allergene.map((item: any) => item._id),
-      options: options.map(({ title, maxOptions, items }) => ({
+      options: options.map(({ title, maxOptions, items, isObligatory }) => ({
         title,
         maxOptions: String(maxOptions),
         items: items.map((v) => v),
+        isObligatory
       })),
       priority,
       statut,
@@ -321,19 +327,6 @@ const FoodListPage: React.FC = () => {
               type: (a, b) =>
                 a.type.priority < b.type.priority ? 1
                   : a.type.priority > b.type.priority ? -1 : 0,
-              // priority: (a, b) => 
-              //     a.priority < b.priority? 1 
-              //     : a.priority > b.priority ? -1 : 0,
-              // price: (a, b) => 
-              //   (a.price.amount || 0) < (b.price.amount || 0)
-              //     ? -1
-              //     : (a.price.amount || 0) > (b.price.amount || 0)
-              //       ? 1
-              //       : 0,
-              // restaurant: (a, b) =>
-              //   (b.restaurant?.name || '').localeCompare(
-              //     a.restaurant?.name || '',
-              //   ),
             },
           }}
         >

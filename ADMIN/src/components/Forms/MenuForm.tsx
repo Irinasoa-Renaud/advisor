@@ -125,7 +125,7 @@ const MenuForm: React.FC<MenuFormProps> = ({
 
   useEffect(() => {
     setFoodOptions([]);
-    let filter = '';
+    let filter = values.restaurant;
     if (isRestaurantAdmin && restaurant) {
       filter = restaurant._id
     } else if (!isRestaurantAdmin && selectedResto) {
