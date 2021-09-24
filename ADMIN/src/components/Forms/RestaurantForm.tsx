@@ -22,6 +22,10 @@ import {
   Typography,
   useTheme,
 } from '@material-ui/core';
+import Radio from '@material-ui/core/Radio';
+import RadioGroup from '@material-ui/core/RadioGroup';
+import FormControl from '@material-ui/core/FormControl';
+import FormLabel from '@material-ui/core/FormLabel';
 import { Autocomplete } from '@material-ui/lab';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import useForm, { FormError, FormValidationHandler } from '../../hooks/useForm';
@@ -65,13 +69,7 @@ const listParametreLivraison: any[] = [
     type: 'text',
     titre: 'Les villes gratuit',
     placeholder: 'Ville gratuit'
-  },
-  {
-    key: 'MATRIX',
-    type: 'number',
-    titre: 'Distance maximum de livraison',
-    placeholder: 'Distance maximum'
-  },
+  }
 ]
 
 type OpeningTime = {
@@ -126,6 +124,7 @@ export type RestaurantFormType = {
   priceByMiles: any;
   couvertureWeb?: File;
   couvertureMobile?: File;
+  DistanceMax: number;
   logo?: File;
 };
 
@@ -197,6 +196,7 @@ const RestaurantForm: React.FC<RestaurantFormProps> = ({
     isMenuActive: true,
     isBoissonActive: true,
     livraison: {},
+    DistanceMax: 0,
     openingTimes: new Map(
       daysOfWeek.map((day) => [
         day,
@@ -1265,6 +1265,23 @@ const RestaurantForm: React.FC<RestaurantFormProps> = ({
 
           <Grid item xs={12}>
             <Typography variant="h5" gutterBottom>
+              Distance maximun
+            </Typography>
+            <TextField
+              name="DistanceMax"
+              type="number"
+              placeholder="Distance maximum"
+              variant="outlined"
+              fullWidth
+              defaultValue={initialValues.DistanceMax}
+              error={!!errors.DistanceMax}
+              helperText={errors.DistanceMax}
+              onBlur={handleInputBlur}
+            />
+          </Grid>
+
+          <Grid item xs={12}>
+            <Typography variant="h5" gutterBottom>
               Prix par kilomètre
             </Typography>
             <TextField
@@ -1286,8 +1303,8 @@ const RestaurantForm: React.FC<RestaurantFormProps> = ({
           </Grid>
 
 
-        </>)
-        }
+        </>
+        )}
 
         {
           (isDelivery && deliveryFixed) && (
@@ -1362,6 +1379,17 @@ const RestaurantForm: React.FC<RestaurantFormProps> = ({
             helperText={errors.discount}
             onBlur={handleInputBlur}
           />
+          <Grid container={true} className={classes.padding}>
+            <FormControl component="fieldset">
+              <FormLabel component="legend">Gender</FormLabel>
+              <RadioGroup aria-label="gender" name="gender1" value={value} onChange={handleChange}>
+                <FormControlLabel value="female" control={<Radio />} label="Female" />
+                <FormControlLabel value="male" control={<Radio />} label="Male" />
+                <FormControlLabel value="other" control={<Radio />} label="Other" />
+                <FormControlLabel value="disabled" disabled control={<Radio />} label="(Disabled option)" />
+              </RadioGroup>
+            </FormControl>
+          </Grid>
         </Grid>}
 
         <Grid item container justify="flex-end" alignItems="center" xs={12}>

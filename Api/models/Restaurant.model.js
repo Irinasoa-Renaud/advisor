@@ -46,6 +46,9 @@ const Restaurant = new Schema({
     priceByMiles: {
         type: Number,
     },
+    DistanceMax: {
+        type: Number,
+    },
     postalCode: {
         type: String,
         required: true,
@@ -174,6 +177,9 @@ const Restaurant = new Schema({
     discount: {
         type: String,
     },
+    discountType: {
+        type: String,
+    }
 }, {
     timestamps: true,
 }, );

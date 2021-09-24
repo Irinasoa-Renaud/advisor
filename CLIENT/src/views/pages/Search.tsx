@@ -29,7 +29,7 @@ import { ArrowDropDown, ArrowDropUp } from '@material-ui/icons';
 import getFoodAttributes from '../../services/foodattributes';
 import FoodAttribute from '../../models/FoodAttribute.model';
 import { useLocation } from 'react-router-dom';
-import querystring from 'querystring';
+import querystring, { parse } from 'querystring';
 import Axios, { CancelTokenSource } from 'axios';
 import { Lang } from '../../redux/types/setting';
 import FoodCategory from '../../models/FoodCategory.model';
@@ -465,11 +465,13 @@ const Search: React.FC<SearchProps> = ({ lang }) => {
                       >
                         {foodCategories.map(({ imageURL, name, _id }) => (
                           <Grid item>
+                            {_id === JSON.parse(decodeURI(window.location.href).split('&')[1].split('=')[1]).category && console.log(name)}
                             <Chip
                               avatar={<Avatar src={imageURL} alt={name.fr} />}
                               label={name.fr}
                               color={
-                                filter?.indexOf(_id) >= 0
+                                (filter?.indexOf(_id) >= 0) ||
+                                  (_id === JSON.parse(decodeURI(window.location.href).split('&')[1].split('=')[1]).category)
                                   ? 'primary'
                                   : undefined
                               }

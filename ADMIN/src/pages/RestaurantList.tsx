@@ -220,13 +220,15 @@ const RestaurantListPage: React.FC = () => {
       logo,
       couvertureMobile,
       couvertureWeb,
-      deliveryFixed
+      deliveryFixed,
+      DistanceMax
     } = restaurant;
 
     modif.current = {
       _id,
       deliveryFixed,
       delivery,
+      DistanceMax,
       minPriceIsDelivery,
       priceByMiles: +priceByMiles,
       aEmporter,

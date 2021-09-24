@@ -32,6 +32,7 @@ import {
   TextField,
   Theme,
   Typography,
+  Tooltip,
   useMediaQuery,
   useTheme,
 } from '@material-ui/core';
@@ -80,6 +81,8 @@ import 'moment/locale/fr';
 import { Autocomplete } from '@material-ui/lab';
 import { useSelector } from '../../utils/redux';
 import MuiAlert, { AlertProps } from '@material-ui/lab/Alert';
+import { getGeoLocation } from '../../services/location';
+
 
 function Alert(props: AlertProps) {
   return <MuiAlert elevation={6} variant="filled" {...props} />;
@@ -613,6 +616,9 @@ const Checkout: React.FC<CheckoutProps> = ({
 
     const results = await geocodeByAddress(data.description);
     const { lng, lat } = await getLatLng(results[0]);
+
+    console.log("data.placeId", data.placeId);
+
     const [place] = await geocodeByPlaceId(data.placeId);
     const address = place.formatted_address;
     const { long_name: postalCode = '' } = place.address_components.find(c => c.types.includes('postal_code')) || {};
@@ -699,28 +705,6 @@ const Checkout: React.FC<CheckoutProps> = ({
     }
 
   }
-  //   setValues((values) => ({
-  //     ...values,
-  //     address,
-  //     city,
-  //     postalCode,
-  //     latitude: String(lat),
-  //     longitude: String(lng),
-  //   }))
-  // }
-  //   (address) => {
-
-  //     console.log("address",address)
-  //     geocodeByAddress(address)
-  //       .then((results: any) => {
-  //         getLatLng(results[0])
-  //         console.log("geocodeByAddress",results)
-  //       })
-  //       .then(latLng => console.log('Success', latLng))
-  //       .catch(error => console.error('Error', error));
-  //   },
-  //   []
-  // )
 
   const theme = useTheme();
 
@@ -1102,47 +1086,76 @@ const Checkout: React.FC<CheckoutProps> = ({
                         {commandType === 'delivery' && (
                           <>
                             <Grid item xs={12}>
+                              <Grid container={true}>
+                                <Grid item>
 
-                              <PlacesAutocomplete
-                                value={shippingAddress}
-                                onChange={(address) => setShippingAddress(address)}
-                              >
-                                {({ getInputProps, suggestions, loading }) => (
-                                  <Autocomplete
-                                    noOptionsText="Aucune adresse trouvée"
-                                    options={suggestions.map((v) => v)}
-                                    loading={loading}
-                                    getOptionLabel={(option: any) => option.description}
-                                    onChange={(_: any, value: any) => value && handleSelectShippingAddress?.(value)}
-                                    inputValue={shippingAddress}
-                                    onInputChange={(_, value) =>
-                                      getInputProps().onChange({ target: { value } })
-                                    }
-                                    renderInput={(params) => (
-                                      <TextField
-                                        {...params}
-                                        fullWidth
-                                        variant="outlined"
-                                        name="address"
-                                        label={
-                                          <span className="translate">Adresse</span>
+                                  <PlacesAutocomplete
+                                    value={shippingAddress}
+                                    onChange={(address) => setShippingAddress(address)}
+                                  >
+                                    {({ getInputProps, suggestions, loading }) => (
+                                      <Autocomplete
+                                        noOptionsText="Aucune adresse trouvée"
+                                        options={suggestions.map((v) => v)}
+                                        loading={loading}
+                                        getOptionLabel={(option: any) => option.description}
+                                        onChange={(_: any, value: any) => value && handleSelectShippingAddress?.(value)}
+                                        inputValue={shippingAddress}
+                                        onInputChange={(_, value) =>
+                                          getInputProps().onChange({ target: { value } })
                                         }
-                                        InputProps={{
-                                          ...params.InputProps,
-                                          endAdornment: (
-                                            <React.Fragment>
-                                              {loading ? (
-                                                <CircularProgress color="inherit" size={16} />
-                                              ) : null}
-                                              {params.InputProps.endAdornment}
-                                            </React.Fragment>
-                                          ),
-                                        }}
+                                        renderInput={(params) => (
+                                          <TextField
+                                            {...params}
+                                            fullWidth
+                                            variant="outlined"
+                                            name="address"
+                                            label={
+                                              <span className="translate">Adresse</span>
+                                            }
+                                            InputProps={{
+                                              ...params.InputProps,
+                                              endAdornment: (
+                                                <React.Fragment>
+                                                  {loading ? (
+                                                    <CircularProgress color="inherit" size={16} />
+                                                  ) : null}
+                                                  {params.InputProps.endAdornment}
+                                                </React.Fragment>
+                                              ),
+                                            }}
+                                          />
+                                        )}
                                       />
                                     )}
-                                  />
-                                )}
-                              </PlacesAutocomplete>
+                                  </PlacesAutocomplete>
+                                </Grid>
+
+                                <Grid item>
+                                  <Tooltip title="Utiliser votre position actuelle">
+                                    <IconButton
+                                      onClick={() => {
+                                        getGeoLocation()
+                                          .then((position) => {
+                                            console.log("position", position);
+                                            // setValues((values) => {
+                                            //   values.longitude = `${position.coords.longitude}`;
+                                            //   values.latitude = `${position.coords.latitude}`;
+                                            //   return { ...values };
+                                            // });
+                                          })
+                                          .catch(() => {
+                                            enqueueSnackbar('Erreur lors la localisation', {
+                                              variant: 'error',
+                                            });
+                                          });
+                                      }}
+                                    >
+                                      <LocationOnIcon />
+                                    </IconButton>
+                                  </Tooltip>
+                                </Grid>
+                              </Grid>
                             </Grid>
                             <Grid item xs={12}>
                               <TextField

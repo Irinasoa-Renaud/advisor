@@ -27,6 +27,7 @@ const QRCodePage = lazy(() => import('../pages/QrCode'));
 const PlatRecommanderList = lazy(() => import('../pages/PlatRecommanderList'))
 const DashboardListPage = lazy(() => import('../pages/DashboardList'));
 const MenuTitleListPage = lazy(() => import('../pages/MenuTitleList'));
+const platPopulaire = lazy(() => import('../pages/PlatPopulaire'));
 
 const DeliveryCommandListPage = lazy(
   () => import('../pages/DeliveryCommandList'),
@@ -151,11 +152,19 @@ const AdminRoutes: React.FC = () => {
                   path="/accompaniments"
                   component={AccompanimentListPage}
                 />
+
                 <AdminRoute exact path="/users" component={UserListPage} />
+
+                <AdminRoute exact path="/platPopulaire" component={platPopulaire} />
+
                 <AdminRoute exact path="/blogs" component={PostListPage} />
+
                 <AdminRoute exact path="/restoRecommander" component={RestoRecommanderListPage} />
+
                 <Route exact path="/messages" component={MessageListPage} />
+
                 <Route exact path="/qrcode" component={QRCodePage} />
+
                 <Route
                   exact
                   path="/commands"

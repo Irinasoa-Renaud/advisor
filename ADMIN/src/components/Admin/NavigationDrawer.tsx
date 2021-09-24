@@ -268,6 +268,13 @@ const links: NavLink[] = [
     restoOnly: false,
   },
   {
+    title: 'Plat populaire',
+    icon: RedeemOutlined,
+    href: '/platPopulaire',
+    adminOnly: true,
+    restoOnly: false,
+  },
+  {
     title: 'Voir ma page',
     icon: Pages,
     href: '/maPage',
