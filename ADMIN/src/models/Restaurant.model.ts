@@ -23,6 +23,7 @@ interface Restaurant {
   foodTypes: FoodType[];
   DistanceMax: number;
   imageURL: string;
+  discountType: string;
   type: string;
   address: string;
   city: string;

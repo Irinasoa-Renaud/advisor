@@ -45,8 +45,6 @@ const AddEditAccompagnement: React.FC<AddEditAccompagnementProps> = ({
         ...initialValues,
     });
 
-    console.log("initialValues", initialValues);
-
     const priority = (a: any[], b: any[]) => {
 
         const array = [];

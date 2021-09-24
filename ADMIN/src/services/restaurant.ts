@@ -166,6 +166,10 @@ const getFormData: (data: Partial<RestaurantFormType>) => FormData = (data) => {
 
   data.logo && formData.append('logo', data.logo);
 
+  data.DistanceMax && formData.append('DistanceMax', `${data.DistanceMax}`);
+
+  data.discountType && formData.append('discountType', data.discountType);
+
   typeof data.paiementCB === 'boolean' &&
     formData.append(
       'paiementCB',

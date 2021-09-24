@@ -47,7 +47,7 @@ const Restaurant = new Schema({
         type: Number,
     },
     DistanceMax: {
-        type: Number,
+        type: String,
     },
     postalCode: {
         type: String,

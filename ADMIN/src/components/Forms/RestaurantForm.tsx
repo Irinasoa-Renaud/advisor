@@ -89,7 +89,8 @@ type OpeningTime = {
 export type RestaurantFormType = {
   _id?: string;
   name: string;
-  minPriceIsDelivery?: string,
+  minPriceIsDelivery?: string;
+  discountType?: string;
   address: string;
   phoneNumber: string;
   fixedLinePhoneNumber: string;
@@ -172,6 +173,7 @@ const RestaurantForm: React.FC<RestaurantFormProps> = ({
     name: '',
     address: '',
     phoneNumber: '',
+    discountType: 'SurTotalité',
     fixedLinePhoneNumber: '',
     categories: [],
     city: '',
@@ -432,6 +434,18 @@ const RestaurantForm: React.FC<RestaurantFormProps> = ({
       [name]: checked
     }));
   }
+
+  const handleRadioChange = (e: any) => {
+
+    const { name, value } = e.target;
+
+    setValues((values) => ({
+      ...values,
+      discountType: value
+    }));
+
+  }
+
 
   const handleChangeLiraison = (e: any) => {
 
@@ -1265,12 +1279,12 @@ const RestaurantForm: React.FC<RestaurantFormProps> = ({
 
           <Grid item xs={12}>
             <Typography variant="h5" gutterBottom>
-              Distance maximun
+              Distance maximun (Km)
             </Typography>
             <TextField
               name="DistanceMax"
               type="number"
-              placeholder="Distance maximum"
+              placeholder="xxx km"
               variant="outlined"
               fullWidth
               defaultValue={initialValues.DistanceMax}
@@ -1379,17 +1393,16 @@ const RestaurantForm: React.FC<RestaurantFormProps> = ({
             helperText={errors.discount}
             onBlur={handleInputBlur}
           />
-          <Grid container={true} className={classes.padding}>
-            <FormControl component="fieldset">
-              <FormLabel component="legend">Gender</FormLabel>
-              <RadioGroup aria-label="gender" name="gender1" value={value} onChange={handleChange}>
-                <FormControlLabel value="female" control={<Radio />} label="Female" />
-                <FormControlLabel value="male" control={<Radio />} label="Male" />
-                <FormControlLabel value="other" control={<Radio />} label="Other" />
-                <FormControlLabel value="disabled" disabled control={<Radio />} label="(Disabled option)" />
-              </RadioGroup>
-            </FormControl>
-          </Grid>
+          <br />
+          <br />
+          <FormControl component="fieldset">
+            <FormLabel component="legend">Pour la remise</FormLabel>
+            <RadioGroup aria-label="gender" name="discountType" value={values.discountType} onChange={handleRadioChange}>
+              <FormControlLabel value="SurCommande" control={<Radio />} label="Sur la commande" />
+              <FormControlLabel value="SurTransport" control={<Radio />} label="Sur le transport" />
+              <FormControlLabel value="SurTotalité" control={<Radio />} label="Sur la totalité" />
+            </RadioGroup>
+          </FormControl>
         </Grid>}
 
         <Grid item container justify="flex-end" alignItems="center" xs={12}>
