@@ -51,15 +51,14 @@ app.use(
         exposedHeaders: '*',
     }),
 );
+
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-
 // Use token authenticator
 app.use(tokenAuthenticator);
-
 app.use('/', indexRouter);
 app.use('/', authRouter);
 app.use('/users', userRouter);
@@ -78,11 +77,12 @@ app.use('/accompaniments', accompanimentRouter);
 app.use('/translate', translateRouter);
 app.use('/utils', utilRouter);
 app.use('/adminMessage', adminMessageRouter);
-app.use('/platRecommander', platRecommander);
 app.use('/platPopulaire', platPopulaire);
 app.use('/restoRecommander', restoRecommanderRouter);
 app.use('/dashboard', dashboardRouter);
 app.use('/view', viewRouter);
+app.use('/platRecommander', platRecommander);
+
 // app.use('/mapMAtrix', mapMAtrix);
 
 app.use(function(_, res) {
