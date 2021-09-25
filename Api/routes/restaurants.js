@@ -693,7 +693,6 @@ router.put(
     async function(req, res, next) {
         const { id } = req.params;
         const data = parse(req.body);
-
         if (req.files) {
             data.logo = `${process.env.HOST_NAME}/uploads/restaurants/${req.files.logo[0].filename}`
             data.couvertureMobile = `${process.env.HOST_NAME}/uploads/restaurants/${req.files.couvertureMobile[0].filename}`

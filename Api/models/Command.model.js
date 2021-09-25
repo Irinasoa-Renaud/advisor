@@ -73,6 +73,12 @@ const Command = new Schema({
         paymentIntentId: String,
         paymentChargeId: String,
     },
+    discountIsPrice: {
+        type: String,
+    },
+    discount: {
+        type: String,
+    },
     validated: {
         type: Boolean,
         default: false,

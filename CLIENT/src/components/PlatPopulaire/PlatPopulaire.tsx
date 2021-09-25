@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Grid from '@material-ui/core/Grid';
-import { getPlatRecommander } from '../../services/platRecommander'
+import { getPlatPopulaire } from '../../services/platPopulaire';
 import Food from '../../models/Food.model';
 import { SliderContainer, SliderSection } from '../Slider';
 import { getChunks } from '../../utils/array';
@@ -23,15 +23,15 @@ import {
     useMediaQuery,
 } from '@material-ui/core';
 
-interface IPlatRecommander {
+interface IPlatPopulaire {
     clsx: any;
     Link: any;
     title: string;
 }
 
-const PlatRecommander: React.FC<any> = (props) => {
+const PlatPopulaire: React.FC<any> = (props) => {
 
-    const { clsx, Link, title } = props as IPlatRecommander;
+    const { clsx, Link, title } = props as IPlatPopulaire;
     const { enqueueSnackbar } = useSnackbar();
     const classes = useStyles();
 
@@ -78,8 +78,8 @@ const PlatRecommander: React.FC<any> = (props) => {
         if (!loadingPopularFoods) {
             setLoadingPopularFoods(true);
             setPopularFoods([]);
-            getPlatRecommander()
-                .then((data) => {
+            getPlatPopulaire()
+                .then((data: any) => {
                     const array = data
                         .sort((a: any, b: any) => a.priority - b.priority)
                         .map((item: any) => item.food._id)
@@ -181,4 +181,4 @@ const PlatRecommander: React.FC<any> = (props) => {
     );
 };
 
-export default PlatRecommander;
+export default PlatPopulaire;

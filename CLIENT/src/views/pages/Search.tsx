@@ -465,7 +465,7 @@ const Search: React.FC<SearchProps> = ({ lang }) => {
                       >
                         {foodCategories.map(({ imageURL, name, _id }) => (
                           <Grid item>
-                            {_id === JSON.parse(decodeURI(window.location.href).split('&')[1].split('=')[1]).category && console.log(name)}
+                            {_id === JSON.parse(decodeURI(window.location.href).split('&')[1].split('=')[1]).category}
                             <Chip
                               avatar={<Avatar src={imageURL} alt={name.fr} />}
                               label={name.fr}

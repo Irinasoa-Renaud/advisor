@@ -558,6 +558,24 @@ const OrderDetailsPage: React.FC<OrderDetailsPageProps> = ({ id }) => {
               </>
             )}
 
+            {(+command.discount > 0) && (
+              <>
+                <Grid
+                  container
+                  justify="space-between"
+                  alignItems="center"
+                  style={{ padding: '8px 0' }}
+                >
+                  <Typography className="translate">
+                    Remise
+                  </Typography>
+                  <Typography className="notranslate">
+                    {command.discountIsPrice ? `€ ${command.discount}` : `${command.discount} % `}
+                  </Typography>
+                </Grid>
+              </>
+            )}
+
             {command.commandType === 'delivery' && <Grid
               container
               justify="space-between"

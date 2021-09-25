@@ -1,16 +1,25 @@
 const express = require('express');
-const { adminGuard, allAdminGuard } = require('../middlewares/token');
 const router = express.Router();
-const { Menu, Food, Restaurant } = require('../models');
+
+const { Food, Restaurant, FoodType } = require('../models');
 const {
-    BAD_REQUEST,
-    INTERNAL_SERVER_ERROR,
     NOT_FOUND,
+    INTERNAL_SERVER_ERROR,
+    BAD_REQUEST,
 } = require('http-status-codes');
+const {
+    POPULAR,
+    ONSITE,
+    WITH_PRICE,
+    WITHOUT_PRICE,
+    NEW,
+    PRIORITY,
+} = require('../constants');
+const { adminGuard, allAdminGuard } = require('../middlewares/token');
 const { upload } = require('../middlewares/upload');
 const { parse } = require('../utils/request');
-const path = require('path');
 const fs = require('fs');
+const path = require('path');
 const {
     getNextSequenceValue,
     decrementSequenceValue,
@@ -18,56 +27,112 @@ const {
     resetSequenceValue,
 } = require('../utils/counter');
 
+
 router.get('/', async function(req, res, next) {
-    const { lang, filter: filterString = '{}' } = req.query;
+    const { searchCategory, restaurant, type, offset, limit, name, lang, city } =
+    req.query;
 
     try {
-        let filter = JSON.parse(filterString);
+        let filter = {};
 
-        if (filter.restaurant === '') filter.restaurant = null;
+        if (restaurant) filter.restaurant = restaurant !== '' ? restaurant : null;
 
-        let menus = (
-            await Menu.find(filter)
-            .populate({ path: 'restaurant', populate: 'category foodTypes' })
-            .populate({
-                path: 'foods.food',
-                populate: 'type restaurant',
-            })
+        if (name)
+            filter.name = {
+                $regex: new RegExp(`/.*${name}.*/`),
+            };
+
+        if (searchCategory === WITH_PRICE || searchCategory === POPULAR)
+            filter = {
+                $and: [{
+                        ...filter,
+                        price: {
+                            $ne: null,
+                        },
+                    },
+                    {
+                        ...filter,
+                        'price.amount': {
+                            $ne: null,
+                        },
+                    },
+                ],
+            };
+
+        if (searchCategory === ONSITE || searchCategory === WITHOUT_PRICE)
+            filter = {
+                $or: [{
+                        ...filter,
+                        price: null,
+                    },
+                    {
+                        ...filter,
+                        'price.amount': null,
+                    },
+                ],
+            };
+
+        if (type) {
+            const typeIds = (await FoodType.find({ 'name.fr': type })).map(
+                (e) => e._id,
+            );
+
+            filter.type = {
+                $in: typeIds,
+            };
+        }
+
+        const foodDocuments = Food.find(filter).populate('type');
+
+        if (searchCategory === POPULAR) foodDocuments.sort({ note: 'desc' });
+
+        if (searchCategory === PRIORITY) foodDocuments.sort({ priority: 'desc' });
+
+        if (city) {
+            const restaurantIds = (
+                await Restaurant.find({ city: new RegExp(`^${city}`, 'ig') })
+            ).map((d) => d.id);
+            foodDocuments.where('restaurant', { $in: restaurantIds });
+        }
+
+        if (searchCategory === NEW)
+            foodDocuments.sort({
+                createdAt: 'desc',
+            });
+
+        if (offset) foodDocuments.skip(offset);
+
+        if (limit) foodDocuments.limit(Number(limit));
+
+        let foods = (
+            await foodDocuments
+            .populate('ratings')
+            .populate('type')
+            .populate('restaurant')
+            .populate('attributes')
+            .populate('allergene')
         ).map((e) => e.toJSON());
 
-        menus = menus.map((e) => ({
-            ...e,
-            foods: e.foods.filter(({ food }) => !!food),
-        }));
+        if (lang) {
 
-        if (lang)
-            menus = menus.map((e) => ({
+            foods = foods.map((e) => ({
                 ...e,
-                restaurant: e.restaurant && {
-                    ...e.restaurant,
-                    category: e.restaurant.category.map((c) => ({
-                        ...c,
-                        name: c.name && (c.name[lang] || c.name.fr),
-                    })),
-                },
                 name: e.name && (e.name[lang] || e.name.fr),
-                foods: e.foods
-                    .filter(({ food }) => !!food)
-                    .map(({ food: f, additionalPrice }) => ({
-                        food: f && {
-                            ...f,
-                            name: f.name && (f.name[lang] || f.name.fr),
-
-                            type: {
-                                ...f.type,
-                                name: f.type.name && (f.type.name[lang] || f.type.name.fr),
-                            },
-                        },
-                        additionalPrice,
-                    })),
+                type: {
+                    ...e.type,
+                    name: e.type && (e.type.name[lang] || e.type.name.fr),
+                },
+                status: e.restaurant && e.restaurant.status,
+                restaurant: e.restaurant && e.restaurant._id,
+                restaurant_object: e.restaurant,
             }));
 
-        res.json(menus);
+        }
+
+        console.log("foodDocuments", foods.map(e => e.options))
+
+        res.json(foods);
+
     } catch (error) {
         res.status(INTERNAL_SERVER_ERROR);
 
@@ -81,51 +146,37 @@ router.get('/', async function(req, res, next) {
 router.get('/:id', async function(req, res, next) {
     const { id } = req.params;
     const { lang } = req.query;
-
+    z
     try {
-        let menu = await Menu.findById(id)
-            .populate({
-                path: 'restaurant',
-                populate: 'category foodTypes',
-            })
-            .populate({
-                path: 'foods.food',
-                populate: 'type restaurant',
-            });
-        if (!menu) return res.status(NOT_FOUND);
 
-        menu = menu.toJSON();
+        let food = await Food.findById(id)
+            .populate('ratings')
+            .populate('type')
+            .populate('restaurant')
+            .populate('attributes')
+            .populate('allergene');
 
-        menu.foods = menu.foods.filter(({ food }) => !!food);
+        if (!food) return res.status(NOT_FOUND).json({ message: 'Food not found' });
+
+        food = food.toJSON();
+        const {
+            restaurant: { status },
+        } = food;
 
         if (lang) {
-            menu = {
-                ...menu,
-                name: menu.name && (menu.name[lang] || menu.name.fr),
-                restaurant: menu.restaurant && {
-                    ...menu.restaurant,
-                    category: menu.restaurant.category.map((c) => ({
-                        ...c,
-                        name: c.name && (c.name[lang] || c.name.fr),
-                    })),
+            food = {
+                ...food,
+                status,
+                name: food.name[lang] || food.name.fr,
+                type: {
+                    ...food.type,
+                    name: food.type.name && (food.type.name[lang] || food.type.name.fr),
                 },
-                foods: menu.foods.map(({ food: f, additionalPrice }) => ({
-                    food: f && {
-                        ...f,
-                        name: f.name && (f.name[lang] || f.name.fr),
-
-                        type: {
-                            ...f.type,
-                            name: f.type.name && (f.type.name[lang] || f.type.name.fr),
-                        },
-                    },
-                    additionalPrice,
-                })),
             };
         }
 
 
-        res.json(menu);
+        res.json(food);
     } catch (error) {
         res.status(INTERNAL_SERVER_ERROR);
 
@@ -141,35 +192,33 @@ router.post(
     allAdminGuard,
     upload.single('image'),
     async function(req, res, next) {
-
-        const body = req.body;
-
-        //    console.log("body", body);
-
-        const menuData = {
+        const body = parse(req.body);
+        const foodData = {
             ...body,
-            priority: await getNextSequenceValue('menuPriority'),
+            priority: await getNextSequenceValue('foodPriority'),
             imageURL: req.file &&
-                `${process.env.HOST_NAME}/uploads/menus/${req.file.filename}`,
+                `${process.env.HOST_NAME}/uploads/foods/${req.file.filename}`,
         };
 
         try {
+            const food = new Food(foodData);
 
-            const menu = new Menu(menuData);
-
-            const newMenu = await menu.save({
+            const newFood = await food.save({
                 validateBeforeSave: true,
             });
 
             if (body.restaurant) {
                 const restaurant = await Restaurant.findById(body.restaurant);
-                restaurant.menus.push(newMenu.id);
+                restaurant.foods.push(newFood.id);
+                if (!restaurant.foodTypes.filter((e) => e == String(newFood.type)).length)
+                    restaurant.foodTypes.push(newFood.type);
                 await restaurant.save();
             }
 
-            res.json(newMenu.toJSON());
+            res.json(newFood.toJSON());
         } catch (error) {
             res.status(INTERNAL_SERVER_ERROR);
+            if (req.file) fs.unlinkSync(req.file.path);
 
             if (process.env.NODE_ENV === 'development') {
                 console.error(error);
@@ -179,53 +228,23 @@ router.post(
     },
 );
 
-router.post('/:id/foods', async function(req, res, next) {
-    const { id } = req.params;
-    const { foodId } = req.body;
-
-    if (!foodId)
-        return res.status(BAD_REQUEST).json({ message: 'No food id provided' });
-
-    try {
-        const menu = await Menu.findById(id);
-        if (!menu) return res.status(NOT_FOUND);
-
-        if (!menu.foods.filter((e) => e == foodId)) {
-            menu.foods.push(foodId);
-            await menu.save();
-        }
-        res.json(menu.toJSON());
-    } catch (error) {
-        res.status(INTERNAL_SERVER_ERROR);
-
-        if (process.env.NODE_ENV) {
-            console.error(error);
-            res.json(error);
-        }
-    }
-});
-
-router.delete(
-    '/:id/foods/:foodId',
-    adminGuard,
+router.put(
+    '/dragDrop/:id',
+    allAdminGuard,
+    upload.single('image'),
     async function(req, res, next) {
-        const { id, foodId } = req.params;
+        const { id } = req.params;
+        const data = req.body;
+
+        if (!data)
+            return res
+                .status(BAD_REQUEST)
+                .json({ message: 'Data not provided in body' });
 
         try {
-            const menu = await Menu.findById(id);
-            const food = await Food.findById(foodId);
 
-            if (!menu || !food)
-                return res
-                    .status(NOT_FOUND)
-                    .json({ message: 'Menu or food not found' });
-
-            menu.foods = menu.foods.filter((id) => id != foodId);
-
-            await menu.save({
-                validateBeforeSave: true,
-            });
-            res.json({ message: 'Successfully deleted food from menu' });
+            await Food.updateOne({ _id: id }, {...data }, );
+            res.json({ message: 'Successfully updated food' });
         } catch (error) {
             res.status(INTERNAL_SERVER_ERROR);
 
@@ -242,30 +261,64 @@ router.put(
     allAdminGuard,
     upload.single('image'),
     async function(req, res, next) {
-        const { id } = req.params;
-        const data = parse(req.body);
-        if (req.file)
-            data.imageURL = `${process.env.HOST_NAME}/uploads/menus/${req.file.filename}`;
 
-        if (!data)
+        const { id } = req.params;
+
+        const data = parse(req.body);
+
+        console.log("data", data)
+
+        if (req.file) {
+            data.imageURL = `${process.env.HOST_NAME}/uploads/foods/${req.file.filename}`;
+        }
+
+        if (!data) {
             return res
                 .status(BAD_REQUEST)
                 .json({ message: 'Data not provided in body' });
+        }
 
         try {
-            if (data.imageURL) {
-                const menu = await Menu.findById(id);
-                if (menu.imageURL) {
+
+            if (data.imageURL !== null || data.imageURL !== undefined) {
+                const food = await Food.findById(id);
+                if (food.imageURL !== data.imageURL) {
                     const imagePath = path.join(
                         __dirname,
                         '../public',
-                        menu.imageURL.split(process.env.HOST_NAME)[1],
+                        food.imageURL.split(process.env.HOST_NAME)[1],
                     );
                     if (fs.existsSync(imagePath)) fs.unlinkSync(imagePath);
                 }
             }
-            await Menu.updateOne({ _id: id }, data);
-            res.json({ message: 'Successfully updated menu' });
+
+            await Food.updateOne({ _id: id }, {...data })
+
+            res.json({ message: 'Successfully updated food' });
+
+        } catch (error) {
+
+            console.log("test", error);
+            res.status(INTERNAL_SERVER_ERROR);
+
+            if (process.env.NODE_ENV === 'development') {
+                console.error(error);
+                res.json(error);
+            }
+        }
+    },
+);
+
+router.put(
+    '/status/:id',
+    allAdminGuard,
+    async function(req, res, next) {
+        const { id } = req.params;
+        try {
+
+            await Food.updateOne({ _id: id }, {...req.body });
+            res.json({ message: 'Successfully updated food' });
+
         } catch (error) {
             res.status(INTERNAL_SERVER_ERROR);
 
@@ -281,32 +334,33 @@ router.delete('/:id', allAdminGuard, async function(req, res, next) {
     const { id: _id } = req.params;
 
     try {
-        const menu = await Menu.findById(_id);
+        const food = await Food.findById(_id);
 
-        if (menu.priority === (await getCurrentSequenceValue('menuPriority')))
-            await decrementSequenceValue('menuPriority');
+        if (food.priority === (await getCurrentSequenceValue('foodPriority')))
+            await decrementSequenceValue('foodPriority');
 
-        if (!menu) return res.status(NOT_FOUND).json({ message: 'Menu not found' });
+        if (!food) return res.status(NOT_FOUND).json({ message: 'Food not found' });
 
-        if (menu.imageURL) {
+        if (food.imageURL) {
             const imagePath = path.join(
                 __dirname,
                 '../public',
-                menu.imageURL.split(process.env.HOST_NAME)[1],
+                food.imageURL.split(process.env.HOST_NAME)[1],
             );
             if (fs.existsSync(imagePath)) fs.unlinkSync(imagePath);
         }
 
-        const restaurant = await Restaurant.findById(menu.restaurant);
+        const restaurant = await Restaurant.findById(food.restaurant);
         // Remove foods from restaurant
-        restaurant.menus = restaurant.menus.filter((e) => e != _id);
-        await restaurant.save({
-            validateBeforeSave: true,
-        });
+        if (restaurant) {
+            restaurant.foods = restaurant.foods.filter((e) => e != _id);
+            await restaurant.save({
+                validateBeforeSave: true,
+            });
+        }
 
-        const result = await Menu.deleteOne({ _id });
-
-        if (!(await Menu.count())) resetSequenceValue('menuPriority');
+        const result = await Food.deleteOne({ _id });
+        if (!(await Food.count())) resetSequenceValue('foodPriority');
 
         res.json(result);
     } catch (error) {

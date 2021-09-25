@@ -222,7 +222,8 @@ const RestaurantListPage: React.FC = () => {
       couvertureWeb,
       deliveryFixed,
       DistanceMax,
-      discountType
+      discountType,
+      discountIsPrice
     } = restaurant;
 
     modif.current = {
@@ -246,6 +247,7 @@ const RestaurantListPage: React.FC = () => {
       latitude: String(location.coordinates[1]),
       name,
       discountType,
+      discountIsPrice,
       livraison: livraison,
       openingTimes: new Map(
         daysOfWeek.map((d) => [

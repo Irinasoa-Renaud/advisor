@@ -76,6 +76,8 @@ export interface Command {
   updatedAt?: Date;
   confirmationCode: string;
   paiementLivraison?: boolean;
+  discountIsPrice: string;
+  discount: string;
 }
 
 export default Command;

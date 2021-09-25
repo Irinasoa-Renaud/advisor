@@ -11,7 +11,7 @@ import { getRestoRecommander } from '../../services/restoRecommander'
 import { getPlatRecommander } from '../../services/platRecommander'
 import Restaurant from '../../models/Restaurant.model';
 import RestoRecommander from '../../models/RestoRecommander.model';
-import PlatRecommander from '../../components/PlatRecommander';
+import PlatPopulaire from '../../components/PlatPopulaire';
 import {
   Box,
   Button,
@@ -158,7 +158,6 @@ const HomePage: React.FC = () => {
 
     getRestoRecommander()
       .then((data) => {
-        console.log("RESTO RECOMMANDER ICI........", data)
         setRestoReco(data)
         setLoadingRestoRecommander(false)
 
@@ -179,7 +178,6 @@ const HomePage: React.FC = () => {
           .map((item: any) => item.food._id)
         const recommande = [].concat(...array);
         setFoodsId(recommande);
-        console.log("PLAT RECOMMANDER ICI TEST........", recommande);
         setLoadingPopularFoods(false);
       })
       .catch(() => {
@@ -320,7 +318,7 @@ const HomePage: React.FC = () => {
           </SliderContainer>
         )}
 
-        <PlatRecommander
+        <PlatPopulaire
           clsx={clsx}
           Link={Link}
           title="Plats populaires"

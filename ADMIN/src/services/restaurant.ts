@@ -180,12 +180,23 @@ const getFormData: (data: Partial<RestaurantFormType>) => FormData = (data) => {
       'cbDirectToAdvisor',
       JSON.stringify(data.cbDirectToAdvisor),
     );
+
+  typeof data.discountIsPrice === 'boolean' &&
+    formData.append(
+      'discountIsPrice',
+      JSON.stringify(data.discountIsPrice),
+    );
+
   data.customerStripeKey && formData.append('customerStripeKey', data.customerStripeKey);
+
   data.customerSectretStripeKey && formData.append('customerSectretStripeKey', data.customerSectretStripeKey);
+
   typeof data.isMenuActive === 'boolean' &&
     formData.append('isMenuActive', JSON.stringify(data.isMenuActive));
+
   typeof data.isBoissonActive === 'boolean' &&
     formData.append('isBoissonActive', JSON.stringify(data.isBoissonActive));
+
   data.discount && formData.append('discount', data.discount);
 
   return formData;

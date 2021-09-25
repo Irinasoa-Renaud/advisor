@@ -49,12 +49,12 @@ export const estimateMenuPricefixed_price: (menu: MenuInCart, addAmount?: boolea
 
 export const estimateMenuPriceOption: (menu: any, addAmount?: boolean) => number = ({ foods, quantity, item, amount_price }, addAmount) => {
 
-  const optionList: any[] = foods.map((item: any) => item.options
+  const optionList: any[] = foods.length ? foods.map((item: any) => item.options
     .map((item: any) => item.items)
     .map((item: any) => item)
   )[0].map((item: any) => item
     .map((item: any) => item)
-  )
+  ) : []
 
   const optionFilter = [];
 

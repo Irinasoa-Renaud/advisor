@@ -214,7 +214,9 @@ const FullWidthTabs: React.FC<FullWidthTabsProps> = ({
   );
 
   const notDrinks = foods.filter(
-    ({ type: { tag } }) => (tag as string) !== 'drink'
+    ({ type: { name } }) => !(name as string).toLocaleLowerCase().includes('drink') ||
+      !(name as string).toLocaleLowerCase().includes('boisson') ||
+      !(name as string).toLocaleLowerCase().includes('jus')
   );
 
   useEffect(() => {
@@ -371,7 +373,6 @@ const FullWidthTabs: React.FC<FullWidthTabsProps> = ({
                         lg={12}
                         xl={12}
                       >
-                        {console.log("menu", menu)}
                         <MenuCard showGlobalPrice={priceType !== 'priceless'} item={menu} />
                       </Grid>
                     ))

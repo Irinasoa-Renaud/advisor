@@ -146,7 +146,7 @@ router.get('/', async function(req, res, next) {
 router.get('/:id', async function(req, res, next) {
     const { id } = req.params;
     const { lang } = req.query;
-
+    z
     try {
 
         let food = await Food.findById(id)

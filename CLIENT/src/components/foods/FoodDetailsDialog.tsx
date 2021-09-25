@@ -518,9 +518,13 @@ const FoodDetailsDialog: React.FC<FoodDetailsDialogProps> = ({
   const checkIfIsSelectedAllOptions = useCallback(
     () => {
       const emptyOptions = options.filter((option) => option.items.length === 0)
+
+      console.log("emptyOptions", emptyOptions);
+
       if (emptyOptions.length > 0) {
         return false
-      } else {
+      }
+      else {
         return true
       }
     },
@@ -1016,12 +1020,14 @@ const FoodDetailsDialog: React.FC<FoodDetailsDialogProps> = ({
                 <AddIcon />
               </Fab>
             </div>}
-            {(checkIfIsSelectedAllOptions() && (quantity !== 0 || item.options.length === 0)) && <Button
+
+            {((quantity !== 0)) && <Button
               fullWidth
               color="primary"
               size={'large'}
               variant="contained"
-              disabled={!quantity || (item.options.length > 0 && optionSelected.length === 0) || !checkIfIsSelectedAllOptions()}
+              //  disabled={!quantity || (item.options.length > 0 && optionSelected.length === 0) || !checkIfIsSelectedAllOptions()}
+              disabled={false}
               onClick={save}
             >
               <span className="translate">

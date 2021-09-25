@@ -64,6 +64,7 @@ interface Restaurant {
   couvertureWeb: any;
   deliveryFixed: boolean;
   minPriceIsDelivery?: string;
+  discountIsPrice: boolean;
 }
 
 export default Restaurant;

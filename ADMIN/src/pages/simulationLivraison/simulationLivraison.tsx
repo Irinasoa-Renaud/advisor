@@ -146,13 +146,13 @@ const SimulationLivraison: FC = () => {
                         if (
                             RestaurantSelected.DistanceMax &&
                             (+RestaurantSelected.DistanceMax) <= distance) {
-                            setTestDialog(`Le restaurant ne peut pas faire de livraison à cette ville distance maximal est ${(RestaurantSelected.livraison?.MATRIX as any[])[0]}`);
+                            setTestDialog(`Le restaurant ne peut pas faire de livraison à cette ville distance maximal est ${(RestaurantSelected.DistanceMax)} Km.`);
                             setopenDialog(true);
                         }
 
                         setSuccessResponse({
                             distance: directionsData.distance.text,
-                            price: distance * +RestaurantSelected.priceByMiles,
+                            price: +RestaurantSelected.DistanceMax <= distance ? distance * +RestaurantSelected.priceByMiles : 0,
                             duration: directionsData.duration.text
                         });
 

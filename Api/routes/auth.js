@@ -16,8 +16,6 @@ router.post('/login', async function(req, res, next) {
 
     let { email, login, password } = req.body;
 
-    console.log(" req.body", req.body);
-
     let phoneNumber = `+${req.body.phoneNumber}`;
 
     if (typeof login === 'string' && /^.+@.+\..+$/.test(login)) email = login;
@@ -40,11 +38,7 @@ router.post('/login', async function(req, res, next) {
             .json({ message: 'Only admins can log with email' });
     }
 
-    console.log("log", {
-        user: user,
-        compare: compare(password, user.password),
-        password: password
-    })
+
 
     if (!user || !compare(password, user.password)) {
         return res.status(UNAUTHORIZED).json({

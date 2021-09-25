@@ -218,6 +218,9 @@ const MenuDetailsDialog: React.FC<MenuDetailsDialogProps> = ({
 }) => {
   const classes = useStyles();
 
+
+  console.log("===============>", item)
+
   const DEFAULT_STATE = useMemo<MenuInCart>(
     () => ({
       id: uuidv4(),
@@ -606,6 +609,9 @@ const MenuDetailsDialog: React.FC<MenuDetailsDialogProps> = ({
                               if (quantity === 0) {
                                 incrementQuantity()
                               }
+
+                              console.log("add_food", { ...food, additionalPrice });
+
                               dispatch({ type: 'add_food', payload: { ...food, additionalPrice } });
                             }
                             else

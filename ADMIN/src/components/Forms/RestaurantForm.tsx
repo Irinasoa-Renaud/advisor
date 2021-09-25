@@ -126,6 +126,7 @@ export type RestaurantFormType = {
   couvertureWeb?: File;
   couvertureMobile?: File;
   DistanceMax: number;
+  discountIsPrice: boolean;
   logo?: File;
 };
 
@@ -197,6 +198,7 @@ const RestaurantForm: React.FC<RestaurantFormProps> = ({
     cbDirectToAdvisor: true,
     isMenuActive: true,
     isBoissonActive: true,
+    discountIsPrice: false,
     livraison: {},
     DistanceMax: 0,
     openingTimes: new Map(
@@ -294,16 +296,13 @@ const RestaurantForm: React.FC<RestaurantFormProps> = ({
   const [userOptions, setUserOptions] = useState<User[]>([]);
   const [livraisonValue, setLivraisonValue] = useState<any>({});
   const [loadingUsers, setLoadingUsers] = useState<boolean>(false);
-
-  const [openingTimes, setOpeningTimes] = useState<Map<string, OpeningTime>>(
-    initialValues.openingTimes,
-  );
-
+  const [openingTimes, setOpeningTimes] = useState<Map<string, OpeningTime>>(initialValues.openingTimes);
   const [isDelivery, setIsDelivery] = useState<boolean>(values.delivery);
   const [isAEmporter, setIsAEmporter] = useState<boolean>(values.aEmporter);
   const [deliveryFixed, setDeliveryFixed] = useState<boolean>(values.deliveryFixed);
   const [isCB, setIsCB] = useState<boolean>(values.paiementCB);
   const [isDirectToAdvisor, setIsDirectToAdvisor] = useState<boolean>(values.cbDirectToAdvisor);
+  const [isPriceFix, setIsPriceFix] = useState<boolean>(values.discountIsPrice);
 
   const [existAdmin, setExistAdmin] = useState<any>(null);
 
@@ -427,6 +426,10 @@ const RestaurantForm: React.FC<RestaurantFormProps> = ({
 
     if (name === 'aEmporter') {
       setIsAEmporter(checked)
+    }
+
+    if (name === 'discountIsPrice') {
+      setIsPriceFix(checked)
     }
 
     setValues((values) => ({
@@ -1189,6 +1192,22 @@ const RestaurantForm: React.FC<RestaurantFormProps> = ({
               label="Activer la boisson"
             />
           </Grid>
+
+
+          {(isDelivery || isAEmporter) && (
+            <Grid item={true} md={4} xs={12}>
+              <FormControlLabel
+                control={
+                  <IOSSwitch
+                    defaultChecked={isPriceFix}
+                    onChange={handleSwitchDelivery}
+                    name="discountIsPrice"
+                  />
+                }
+                label="Le remise est un prix fixe"
+              />
+            </Grid>
+          )}
         </Grid>
 
         {/**
@@ -1383,7 +1402,7 @@ const RestaurantForm: React.FC<RestaurantFormProps> = ({
             placeholder="Remise"
             InputProps={{
               startAdornment: (
-                <InputAdornment position="start">%</InputAdornment>
+                <InputAdornment position="start">{isPriceFix ? `€` : `%`}</InputAdornment>
               ),
             }}
             variant="outlined"

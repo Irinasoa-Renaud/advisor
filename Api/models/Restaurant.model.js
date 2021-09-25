@@ -179,6 +179,10 @@ const Restaurant = new Schema({
     },
     discountType: {
         type: String,
+    },
+    discountIsPrice: {
+        type: Boolean,
+        default: true,
     }
 }, {
     timestamps: true,

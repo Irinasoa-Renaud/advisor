@@ -1,4 +1,4 @@
-import React, { createRef, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { createRef, useCallback, useEffect, useMemo, useReducer, useState } from 'react';
 import StripeCheckout, { Token } from 'react-stripe-checkout';
 import {
   Avatar,
@@ -82,11 +82,43 @@ import { Autocomplete } from '@material-ui/lab';
 import { useSelector } from '../../utils/redux';
 import MuiAlert, { AlertProps } from '@material-ui/lab/Alert';
 import { getGeoLocation } from '../../services/location';
+import { MenuInCart, Option, OptionItem } from '../../redux/types/cart';
+import Food from '../../models/Food.model';
+import Accompaniment from '../../models/Accompaniment.model';
+import { v4 as uuidv4 } from 'uuid';
+import logger from 'use-reducer-logger';
 
 
 function Alert(props: AlertProps) {
   return <MuiAlert elevation={6} variant="filled" {...props} />;
 }
+
+export type MenuState = MenuInCart;
+
+export type MenuAction =
+  | { type: 'reset' }
+  | { type: 'increment_quantity' }
+  | { type: 'decrement_quantity' }
+  | {
+    type: 'add_food';
+    payload: Food;
+  }
+  | {
+    type: 'remove_food';
+    payload: Food;
+  }
+  | {
+    type: 'increment_option_item';
+    payload: { food: Food; option: string; item: Accompaniment };
+  }
+  | {
+    type: 'decrement_option_item';
+    payload: { food: Food; option: string; item: Accompaniment };
+  }
+  | {
+    type: 'clear_option';
+    payload: { food: Food; title: string };
+  };
 
 const useStyles = makeStyles((theme) => ({
   logoContainer: {
@@ -203,6 +235,8 @@ const Checkout: React.FC<CheckoutProps> = ({
 
   const { totalPrice, restaurant, totalCount, foods, menus, priceless } = cart;
 
+  const item: any = menus.map(({ item }) => item);
+
   const { priceType }: any = useSelector(({ setting: { price } }: any) => ({
     priceType: price
   }))
@@ -215,6 +249,36 @@ const Checkout: React.FC<CheckoutProps> = ({
   //     history.push('/home')
   //   }
   // })
+
+  const priceOrPourcent = (e: number) => {
+
+    if (restaurant && restaurant.discountIsPrice) {
+      return +e - (+restaurant.discount * 100);
+    }
+
+    if (restaurant && !restaurant.discountIsPrice) {
+      return ((+e / 100) - (((+e / 100) * +restaurant.discount) / 100)) * 100;
+    }
+
+  }
+
+  const calculremise = (data: any, e: string) => {
+
+    if (e === 'SurTotalité') {
+      return priceOrPourcent(+data);
+    }
+
+    if (e === 'SurTransport' && commandType === 'delivery' && restaurant && (restaurant.delivery)) {
+      return priceOrPourcent(+data);
+    }
+
+    if (e === 'SurCommande' && commandType === 'takeaway' && restaurant && (restaurant.aEmporter)) {
+      return priceOrPourcent(+data);
+    }
+
+    return +data;
+
+  }
 
   const [commandType, setCommandType] = useState<CommandType>(() =>
     authenticated &&
@@ -237,6 +301,7 @@ const Checkout: React.FC<CheckoutProps> = ({
   const [address] = useState(user?.address || '');
   const [payAfterDelivery, setPayAfterDelivery] = useState(false);
   const [shippingAddress, setShippingAddress] = useState('');
+  const [message, setMessage] = useState(' Le restaurant ne peut pas faire de livraison à cette endroit');
   const [shippingTime, setShippingTime] = useState(new Date());
   const [shippingDay, setShippingDay] = useState<number>(0);
   const [shippingHour, setShippingHour] = useState<number>();
@@ -321,11 +386,10 @@ const Checkout: React.FC<CheckoutProps> = ({
       setOtherFees(0);
     } else {
       if (restaurant && restaurant.deliveryFixed) {
-        setOtherFees(restaurant?.deliveryPrice?.amount || 0);
-        setDeliveryPrice(restaurant?.deliveryPrice?.amount || 0);
+        setOtherFees(calculremise(restaurant?.deliveryPrice?.amount, restaurant.discountType) || 0);
+        setDeliveryPrice(calculremise(restaurant?.deliveryPrice?.amount, restaurant.discountType) || 0);
       }
     }
-
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [commandType, deliveryPriceAmount]);
@@ -343,6 +407,7 @@ const Checkout: React.FC<CheckoutProps> = ({
 
 
       const { restaurant, foods, menus, totalPrice } = cart;
+      const totalPriceWhitediscount = calculremise(totalPrice, ((restaurant && restaurant.discountType) as any)) || 0;
 
       const data: Command = {
         relatedUser: authenticated ? user?._id : undefined,
@@ -355,6 +420,8 @@ const Checkout: React.FC<CheckoutProps> = ({
           }
           : undefined,
         commandType,
+        discountIsPrice: restaurant && restaurant.discountIsPrice || '',
+        discount: restaurant && restaurant.discount || '0',
         items: foods.map(({ item: { _id: item }, options, quantity }) => ({
           item,
           comment: comment || '',
@@ -394,7 +461,7 @@ const Checkout: React.FC<CheckoutProps> = ({
         etage: commandType === 'delivery' ? Number(floor) : undefined,
         optionLivraison: commandType === 'delivery' ? deliveryOption : undefined,
         comment,
-        totalPrice: totalPrice + otherFees,
+        totalPrice: totalPriceWhitediscount + otherFees,
         priceLivraison: deliveryPriceAmount,
         restaurant: restaurant?._id,
         priceless,
@@ -407,6 +474,7 @@ const Checkout: React.FC<CheckoutProps> = ({
       setInProgress(true);
 
       try {
+
         const { code } = await commands(data);
 
         enqueueSnackbar(
@@ -418,8 +486,10 @@ const Checkout: React.FC<CheckoutProps> = ({
 
         const listCart = {
           ...cart,
-          totalPrice: totalPrice + deliveryPriceAmount,
+          totalPrice: calculremise(totalPriceWhitediscount, ((restaurant && restaurant.discountType) as any)) || 0 + deliveryPriceAmount,
           priceLivraison: (deliveryPriceAmount / 100),
+          discountIsPrice: restaurant && restaurant.discountIsPrice || '',
+          discount: restaurant && restaurant.discount || '0',
         }
 
         history.push('/order-summary', { ...listCart, code, comment, commandType, shippingTime });
@@ -446,9 +516,12 @@ const Checkout: React.FC<CheckoutProps> = ({
       const { chargeId } = response.data as { chargeId: string };
       const { restaurant, foods, menus, totalPrice } = cart;
 
-      const command: Command = {
-        commandType,
+      const totalPriceWhitediscount = calculremise(totalPrice, ((restaurant && restaurant.discountType) as any)) || 0;
+
+      const command: Command | any = {
         relatedUser: (user && user._id) || undefined,
+        discountIsPrice: restaurant && restaurant.discountIsPrice || '',
+        discount: restaurant && restaurant.discount || '0',
         payed: {
           status: true,
           paymentChargeId: chargeId,
@@ -481,7 +554,7 @@ const Checkout: React.FC<CheckoutProps> = ({
             })),
           })),
         })),
-        totalPrice: totalPrice + otherFees,
+        totalPrice: totalPriceWhitediscount + otherFees,
         priceLivraison: deliveryPriceAmount,
         shipAsSoonAsPossible:
           commandType === 'delivery' ? shipAsSoonAsPossible : undefined,
@@ -617,7 +690,6 @@ const Checkout: React.FC<CheckoutProps> = ({
     const results = await geocodeByAddress(data.description);
     const { lng, lat } = await getLatLng(results[0]);
 
-    console.log("data.placeId", data.placeId);
 
     const [place] = await geocodeByPlaceId(data.placeId);
     const address = place.formatted_address;
@@ -679,13 +751,13 @@ const Checkout: React.FC<CheckoutProps> = ({
 
               const distance = Math.ceil((directionsData.distance.value / 1000));
 
-              if (
-                restaurant.livraison?.MATRIX &&
-                (restaurant.livraison?.MATRIX as any[])[0] <= distance) {
+              if (+restaurant.DistanceMax <= distance) {
 
-                enqueueSnackbar(`vous êtes à ${distance} Km du restaurant, il ne peut pas faire de livraison à cette ville distance maximal est ${(restaurant.livraison?.MATRIX as any[])[0]} KM`, {
+                enqueueSnackbar(`vous êtes à ${distance} Km du restaurant, il ne peut pas faire de livraison à cette ville distance maximal est ${restaurant.DistanceMax} KM`, {
                   variant: 'error',
                 });
+                setOtherFees(0)
+                setDeliveryPrice(0);
                 setblockDelivery(true);
                 return;
 
@@ -693,8 +765,11 @@ const Checkout: React.FC<CheckoutProps> = ({
 
               if (!restaurant.deliveryFixed) {
                 setblockDelivery(false);
-                setOtherFees(distance * restaurant.priceByMiles * 100)
-                setDeliveryPrice(distance * restaurant.priceByMiles * 100);
+                const totalPriceWhitediscount = calculremise(distance * restaurant.priceByMiles * 100, ((restaurant && restaurant.discountType) as any)) || 0;
+                setOtherFees(totalPriceWhitediscount)
+                setDeliveryPrice(totalPriceWhitediscount);
+                setMessage(`Le prix de livraison est ${totalPriceWhitediscount / 100} €`);
+                setopenDialog(true);
               }
 
             }
@@ -713,7 +788,7 @@ const Checkout: React.FC<CheckoutProps> = ({
       <DialogAlert
         openDialog={openDialog}
         setOpen={setopenDialog}
-        message="Le restaurant ne peut pas faire de livraison à cette endroit"
+        message={message}
       />
       <Navbar alwaysVisible />
       <Container maxWidth="xl" className={classes.root}>
@@ -1086,58 +1161,57 @@ const Checkout: React.FC<CheckoutProps> = ({
                         {commandType === 'delivery' && (
                           <>
                             <Grid item xs={12}>
-                              <Grid container={true}>
-                                <Grid item>
+                              {/* <Grid container={true}>
+                                <Grid item> */}
 
-                                  <PlacesAutocomplete
-                                    value={shippingAddress}
-                                    onChange={(address) => setShippingAddress(address)}
-                                  >
-                                    {({ getInputProps, suggestions, loading }) => (
-                                      <Autocomplete
-                                        noOptionsText="Aucune adresse trouvée"
-                                        options={suggestions.map((v) => v)}
-                                        loading={loading}
-                                        getOptionLabel={(option: any) => option.description}
-                                        onChange={(_: any, value: any) => value && handleSelectShippingAddress?.(value)}
-                                        inputValue={shippingAddress}
-                                        onInputChange={(_, value) =>
-                                          getInputProps().onChange({ target: { value } })
+                              <PlacesAutocomplete
+                                value={shippingAddress}
+                                onChange={(address) => setShippingAddress(address)}
+                              >
+                                {({ getInputProps, suggestions, loading }) => (
+                                  <Autocomplete
+                                    noOptionsText="Aucune adresse trouvée"
+                                    options={suggestions.map((v) => v)}
+                                    loading={loading}
+                                    getOptionLabel={(option: any) => option.description}
+                                    onChange={(_: any, value: any) => value && handleSelectShippingAddress?.(value)}
+                                    inputValue={shippingAddress}
+                                    onInputChange={(_, value) =>
+                                      getInputProps().onChange({ target: { value } })
+                                    }
+                                    renderInput={(params) => (
+                                      <TextField
+                                        {...params}
+                                        fullWidth
+                                        variant="outlined"
+                                        name="address"
+                                        label={
+                                          <span className="translate">Adresse</span>
                                         }
-                                        renderInput={(params) => (
-                                          <TextField
-                                            {...params}
-                                            fullWidth
-                                            variant="outlined"
-                                            name="address"
-                                            label={
-                                              <span className="translate">Adresse</span>
-                                            }
-                                            InputProps={{
-                                              ...params.InputProps,
-                                              endAdornment: (
-                                                <React.Fragment>
-                                                  {loading ? (
-                                                    <CircularProgress color="inherit" size={16} />
-                                                  ) : null}
-                                                  {params.InputProps.endAdornment}
-                                                </React.Fragment>
-                                              ),
-                                            }}
-                                          />
-                                        )}
+                                        InputProps={{
+                                          ...params.InputProps,
+                                          endAdornment: (
+                                            <React.Fragment>
+                                              {loading ? (
+                                                <CircularProgress color="inherit" size={16} />
+                                              ) : null}
+                                              {params.InputProps.endAdornment}
+                                            </React.Fragment>
+                                          ),
+                                        }}
                                       />
                                     )}
-                                  </PlacesAutocomplete>
-                                </Grid>
+                                  />
+                                )}
+                              </PlacesAutocomplete>
+                              {/* </Grid> */}
 
-                                <Grid item>
+                              {/* <Grid item>
                                   <Tooltip title="Utiliser votre position actuelle">
                                     <IconButton
                                       onClick={() => {
                                         getGeoLocation()
                                           .then((position) => {
-                                            console.log("position", position);
                                             // setValues((values) => {
                                             //   values.longitude = `${position.coords.longitude}`;
                                             //   values.latitude = `${position.coords.latitude}`;
@@ -1156,6 +1230,8 @@ const Checkout: React.FC<CheckoutProps> = ({
                                   </Tooltip>
                                 </Grid>
                               </Grid>
+                                 */}
+
                             </Grid>
                             <Grid item xs={12}>
                               <TextField
@@ -1694,7 +1770,9 @@ const Checkout: React.FC<CheckoutProps> = ({
                 <Typography variant="h6" gutterBottom className="translate">
                   Les menus
                 </Typography>
+
                 {menus.map((menu) => {
+                  console.log("menu", menu);
                   const {
                     id,
                     item: { name },
@@ -1923,6 +2001,24 @@ const Checkout: React.FC<CheckoutProps> = ({
                   ).toLocaleString(undefined, {
                     minimumFractionDigits: 1,
                   })}`}</Typography>
+                </Grid>
+              </>
+            )}
+
+            {((commandType === 'delivery') || (commandType === 'takeaway')) && (restaurant && (restaurant.delivery) || restaurant && (restaurant.aEmporter)) && restaurant && (+restaurant.discount > 0) && (
+              <>
+                <Grid
+                  container
+                  justify="space-between"
+                  alignItems="center"
+                  style={{ padding: '8px 0' }}
+                >
+                  <Typography className="translate">
+                    Remise
+                  </Typography>
+                  <Typography className="notranslate">
+                    {restaurant && (restaurant.discountIsPrice) ? `€ ${restaurant.discount}` : `${restaurant.discount} % `}
+                  </Typography>
                 </Grid>
               </>
             )}
