@@ -1,165 +1,152 @@
 const express = require('express');
 const router = express.Router();
-const { compare } = require('../helpers/hash');
-const jwt = require('jsonwebtoken');
+const { parse } = require('../utils/request');
 
 const {
-    UNAUTHORIZED,
-    BAD_REQUEST,
     INTERNAL_SERVER_ERROR,
+    NOT_FOUND,
+    UNAUTHORIZED,
+    OK,
 } = require('http-status-codes');
+const { adminGuard } = require('../middlewares/token');
 
-const { User, Token } = require('../models');
+const {
+    getNextSequenceValue,
+    decrementSequenceValue,
+    getCurrentSequenceValue,
+    resetSequenceValue,
+} = require('../utils/counter');
 
-/* Login endpoint */
-router.post('/login', async function(req, res, next) {
+//import model
+const PlatRecommander = require('../models/PlatRecommander.model');
 
-    let { email, login, password } = req.body;
-
-    let phoneNumber = `+${req.body.phoneNumber}`;
-
-    if (typeof login === 'string' && /^.+@.+\..+$/.test(login)) email = login;
-
-    else if (typeof login === 'string' && /^\+?\d+$/.test(login))
-        phoneNumber = login;
-
-    if ((!email && !phoneNumber && !login) || !password)
-        return res.status(BAD_REQUEST).json({
-            message: "Please provide your phone number / email (if you're an admin) and your password",
-        });
-
-    const user = await User.findOne({
-        $or: [{ phoneNumber }, { email }],
-    }).populate('paymentCards');
-
-    if (email && !user.roles.contains(['ROLE_ADMIN', 'ROLE_RESTAURANT_ADMIN'])) {
-        return res
-            .status(UNAUTHORIZED)
-            .json({ message: 'Only admins can log with email' });
-    }
-
-
-
-    if (!user || !compare(password, user.password)) {
-        return res.status(UNAUTHORIZED).json({
-            status: 'failure',
-            message: `Incorrect ${email ? 'email' : 'phone number'} or password`,
-        });
-    }
-
-    const { id, validated } = user;
-
-    if (!validated)
-        return res.status(UNAUTHORIZED).json({
-            status: 'account-not-validated',
-            message: 'Current user account is not validated yet',
-        });
-
+router.get('/', async function(req, res) {
     try {
-        const currentToken = await Token.findOne({ userId: id });
-        if (currentToken) {
-            await currentToken.remove();
+        const restaurant = await PlatRecommander.find().populate({
+            path: 'food',
+            populate: {
+                path: 'restaurant',
+                model: 'Restaurant',
+            }
+        }).populate({
+            path: 'food',
+            populate: {
+                path: 'attributes',
+                model: 'FoodAttribute'
+            }
+        }).populate({
+            path: 'food',
+            populate: {
+                path: 'type',
+                model: 'FoodType'
+            }
+        });
+
+        return res.status(OK).json(restaurant);
+    } catch (err) {
+        res.status(INTERNAL_SERVER_ERROR);
+
+        if (process.env.NODE_ENV === 'development') {
+            console.error(e);
+            res.json(e);
         }
-    } catch (error) {
-        res.status(INTERNAL_SERVER_ERROR);
-
-        if (process.env.NODE_ENV === 'development') res.json(error);
     }
-
-    const access_token = jwt.sign({
-            id,
-        },
-        process.env.SECRET_KEY, { expiresIn: '3 hours' },
-    );
-
-    const refresh_token = jwt.sign({
-            id,
-        },
-        process.env.SECRET_KEY,
-    );
-
-    const token = new Token({
-        userId: id,
-        access_token,
-        refresh_token,
-    });
-
-    try {
-        await token.save();
-    } catch (error) {
-        res.status(INTERNAL_SERVER_ERROR);
-
-        if (process.env.NODE_ENV === 'development') res.json(error);
-    }
-
-    const { password: pass, ...userDetails } = user.toJSON();
-
-    return res.json({ access_token, refresh_token, user: userDetails });
 });
 
-router.get('/check-token', async function(req, res, next) {
-    const { access_token, refresh_token } = req.query;
+router.get('/:platId', adminGuard, async function(req, res) {
+    try {
+        const plat = await PlatRecommander.findById(req.params.platId)
+            .populate('food.restaurant')
+            .toJSON();
 
-    if (!access_token || !refresh_token)
+        return res.status(OK).json(plat);
+    } catch (err) {
+        res.status(INTERNAL_SERVER_ERROR);
+
+        if (process.env.NODE_ENV === 'development') {
+            console.error(e);
+            res.json(e);
+        }
+    }
+});
+
+router.post('/', adminGuard, async function(req, res, next) {
+
+    const data = parse(req.body);
+    console.log("data", data)
+
+    if (!data) res.status(BAD_REQUEST).json({ message: 'You need to provide ressource' });
+
+    try {
+
+        for (let i = 0; i < data.food.length; i++) {
+
+            await PlatRecommander.create({
+                ...data,
+                food: data.food[i],
+                priority: await getNextSequenceValue('platRecommanderPriority'),
+            });
+
+        }
+
+        res.json("success");
+
+    } catch (err) {
+        res.status(INTERNAL_SERVER_ERROR);
+
+        if (process.env.NODE_ENV === 'development') {
+            console.error(err);
+            res.json(err);
+        }
+    }
+});
+
+router.put('/:platId', adminGuard, async function(req, res) {
+    const data = parse(req.body);
+    const { platId } = req.params;
+
+    if (!data)
         return res
             .status(BAD_REQUEST)
-            .json({ message: 'Access and refresh tokens must be provided' });
+            .send({ message: 'Data not provided in request body' });
 
-    jwt.verify(access_token, process.env.SECRET_KEY, async(err) => {
-        if (!err && (await Token.findOne({ access_token })))
-            res.json({ validity: 'valid' });
-        else {
-            try {
-                const decodedRefreshToken = jwt.verify(
-                    refresh_token,
-                    process.env.SECRET_KEY,
-                );
+    try {
+        await PlatRecommander.updateOne({ _id: platId }, data);
+        return res.status(OK).json({ msg: 'Update successfully' });
+    } catch (e) {
+        res.status(INTERNAL_SERVER_ERROR);
 
-                if (!decodedRefreshToken)
-                    return res.status(BAD_REQUEST).json({
-                        validity: 'invalid',
-                        message: 'access_token and refresh_token are invalid',
-                    });
-
-                const { userId } = decodedRefreshToken;
-                const currentToken = await Token.findOne({
-                    userId,
-                    access_token,
-                    refresh_token,
-                });
-
-                if (!currentToken)
-                    return res.status(UNAUTHORIZED).json({
-                        validity: 'invalid',
-                        message: 'Invalid access or refresh token',
-                    });
-
-                const newAccessToken = jwt.sign({
-                        id: userId,
-                    },
-                    process.env.SECRET_KEY, {
-                        expiresIn: '3 hours',
-                    },
-                );
-
-                const newRefreshToken = jwt.sign({
-                        id: userId,
-                    },
-                    process.env.SECRET_KEY,
-                );
-
-                res.json({
-                    validity: 'expired',
-                    access_token: newAccessToken,
-                    refresh_token: newRefreshToken,
-                });
-            } catch (error) {
-                res.status(INTERNAL_SERVER_ERROR);
-
-                if (process.env.NODE_ENV === 'development') res.json(error);
-            }
+        if (process.env.NODE_ENV === 'development') {
+            console.error(e);
+            res.json(e);
         }
-    });
+    }
 });
 
-module.exports = router;
+router.delete('/:platId', adminGuard, async function(req, res) {
+    try {
+        const ressource = await PlatRecommander.findOneAndRemove({
+            _id: req.params.platId,
+        });
+
+        if (
+            ressource.priority ===
+            (await getCurrentSequenceValue('platRecommanderPriority'))
+        )
+            await decrementSequenceValue('platRecommanderPriority');
+
+        const result = await PlatRecommander.deleteOne({ _id: req.params.platId });
+
+        if (!(await PlatRecommander.count()))
+            resetSequenceValue('platRecommanderPriority');
+
+        res.json(result);
+    } catch (err) {
+        res.status(INTERNAL_SERVER_ERROR);
+
+        if (process.env.NODE_ENV === 'development') {
+            console.error(err);
+            res.json(err);
+        }
+    }
+});
