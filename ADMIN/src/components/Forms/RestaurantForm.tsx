@@ -54,6 +54,7 @@ import { daysOfWeek } from '../../constants/days';
 import AddressInput from '../Common/AddressInput';
 import { geocodeByAddress, getLatLng, geocodeByPlaceId } from 'react-places-autocomplete';
 import { useAuth } from '../../providers/authentication';
+import OptionRestaurant from './OptionRestaurant';
 
 moment.locale('fr');
 
@@ -85,6 +86,18 @@ type OpeningTime = {
     };
   }[];
 };
+
+interface defaultTypeDiscount {
+  discountIsPrice: boolean;
+  value: string;
+  code?: string[];
+}
+
+interface discount {
+  delivery: defaultTypeDiscount;
+  aEmporter: defaultTypeDiscount;
+  codeDiscount: defaultTypeDiscount;
+}
 
 export type RestaurantFormType = {
   _id?: string;
@@ -120,7 +133,7 @@ export type RestaurantFormType = {
   cbDirectToAdvisor: boolean;
   isMenuActive: boolean;
   isBoissonActive: boolean;
-  discount: string;
+  discount: discount;
   livraison: any;
   priceByMiles: any;
   couvertureWeb?: File;
@@ -219,7 +232,21 @@ const RestaurantForm: React.FC<RestaurantFormProps> = ({
         },
       ]),
     ),
-    discount: '0'
+    discount: {
+      delivery: {
+        discountIsPrice: false,
+        value: '0'
+      },
+      aEmporter: {
+        discountIsPrice: false,
+        value: '0'
+      },
+      codeDiscount: {
+        discountIsPrice: false,
+        value: '0',
+        code: []
+      }
+    }
   },
   saving,
   modification,
@@ -1392,37 +1419,12 @@ const RestaurantForm: React.FC<RestaurantFormProps> = ({
  * -------------------------------------------------------------------------------------
        */}
 
-        {(isDelivery || isAEmporter) && <Grid item xs={12}>
-          <Typography variant="h5" gutterBottom>
-            Remise
-          </Typography>
-          <TextField
-            name="discount"
-            type="number"
-            placeholder="Remise"
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">{isPriceFix ? `€` : `%`}</InputAdornment>
-              ),
-            }}
-            variant="outlined"
-            fullWidth
-            defaultValue={initialValues.discount}
-            error={!!errors.discount}
-            helperText={errors.discount}
-            onBlur={handleInputBlur}
-          />
-          <br />
-          <br />
-          <FormControl component="fieldset">
-            <FormLabel component="legend">Pour la remise</FormLabel>
-            <RadioGroup aria-label="gender" name="discountType" value={values.discountType} onChange={handleRadioChange}>
-              <FormControlLabel value="SurCommande" control={<Radio />} label="Sur la commande" />
-              <FormControlLabel value="SurTransport" control={<Radio />} label="Sur le transport" />
-              <FormControlLabel value="SurTotalité" control={<Radio />} label="Sur la totalité" />
-            </RadioGroup>
-          </FormControl>
-        </Grid>}
+        <OptionRestaurant
+          isDelivery={isDelivery}
+          aEmporter={isAEmporter}
+          setValue={setValues}
+          value={values}
+        />
 
         <Grid item container justify="flex-end" alignItems="center" xs={12}>
           <Button

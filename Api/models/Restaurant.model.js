@@ -175,15 +175,40 @@ const Restaurant = new Schema({
         default: true,
     },
     discount: {
-        type: String,
+        delivery: {
+            discountIsPrice: {
+                type: Boolean,
+                default: false,
+            },
+            value: {
+                type: String,
+                default: '0',
+            }
+        },
+        aEmporter: {
+            discountIsPrice: {
+                type: Boolean,
+                default: false,
+            },
+            value: {
+                type: String,
+                default: '0',
+            }
+        },
+        codeDiscount: {
+            discountIsPrice: {
+                type: Boolean,
+                default: false,
+            },
+            value: {
+                type: String,
+                default: '0',
+            },
+            code: [{
+                type: String,
+            }]
+        }
     },
-    discountType: {
-        type: String,
-    },
-    discountIsPrice: {
-        type: Boolean,
-        default: true,
-    }
 }, {
     timestamps: true,
 }, );

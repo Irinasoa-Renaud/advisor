@@ -197,7 +197,7 @@ const getFormData: (data: Partial<RestaurantFormType>) => FormData = (data) => {
   typeof data.isBoissonActive === 'boolean' &&
     formData.append('isBoissonActive', JSON.stringify(data.isBoissonActive));
 
-  data.discount && formData.append('discount', data.discount);
+  data.discount && formData.append('discount', JSON.stringify(data.discount));
 
   return formData;
 };

@@ -524,7 +524,6 @@ const MenuDetailsDialog: React.FC<MenuDetailsDialogProps> = ({
       </Fab>
       <DialogContent className={classes.dialogContent}>
 
-
         <Grid container={true}>
 
           <Grid item xs>
@@ -550,7 +549,6 @@ const MenuDetailsDialog: React.FC<MenuDetailsDialogProps> = ({
 
             </Container>
           </Grid>
-
 
           <Grid item>
             <Typography className={classes.name} variant="h4" component="h1">

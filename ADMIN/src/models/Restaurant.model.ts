@@ -14,6 +14,18 @@ interface OpeningTime {
   };
 }
 
+interface defaultTypeDiscount {
+  discountIsPrice: boolean;
+  value: string;
+  code?: string[];
+}
+
+interface discount {
+  delivery: defaultTypeDiscount;
+  aEmporter: defaultTypeDiscount;
+  codeDiscount: defaultTypeDiscount;
+}
+
 interface Restaurant {
   _id: string;
   priority: number;
@@ -58,7 +70,7 @@ interface Restaurant {
   cbDirectToAdvisor: boolean;
   isMenuActive: boolean;
   isBoissonActive: boolean;
-  discount: string;
+  discount: discount;
   logo: any;
   couvertureMobile: any;
   couvertureWeb: any;

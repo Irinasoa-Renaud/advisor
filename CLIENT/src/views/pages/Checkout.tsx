@@ -407,6 +407,7 @@ const Checkout: React.FC<CheckoutProps> = ({
 
 
       const { restaurant, foods, menus, totalPrice } = cart;
+      
       const totalPriceWhitediscount = calculremise(totalPrice, ((restaurant && restaurant.discountType) as any)) || 0;
 
       const data: Command = {

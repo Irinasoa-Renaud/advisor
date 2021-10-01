@@ -290,7 +290,7 @@ const RestaurantListPage: React.FC = () => {
       cbDirectToAdvisor,
       isMenuActive,
       isBoissonActive,
-      discount
+      discount: discount
     };
     setOpenForm(true);
   }, []);
