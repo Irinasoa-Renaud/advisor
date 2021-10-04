@@ -129,7 +129,7 @@ const AttributeForm: React.FC<AttributeFormProps> = ({
             onChange={(files) => {
               if (files.length) setValues((v) => ({ ...v, image: files[0] }));
             }}
-            initialFiles={[initialValues.imageURL??""]}
+            initialFiles={[initialValues.imageURL ?? ""]}
           />
         </Grid>
         <Grid

@@ -77,6 +77,7 @@ interface Restaurant {
   deliveryFixed: boolean;
   minPriceIsDelivery?: string;
   discountIsPrice: boolean;
+  hasCodePromo: boolean;
 }
 
 export default Restaurant;

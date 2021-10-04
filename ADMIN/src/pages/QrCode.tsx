@@ -243,7 +243,6 @@ const QRCodePage: React.FC = () => {
                   Langue multiple
                 </Typography>
 
-                {console.log("test", values.language)}
                 <Autocomplete
                   options={langs.filter((items: any) => items.code !== values.language)}
                   multiple

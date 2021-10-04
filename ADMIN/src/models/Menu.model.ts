@@ -12,6 +12,12 @@ interface Menu {
   imageURL: string;
   foods: Array<{ food: Food; additionalPrice: Price }>;
   price: Price;
+  options: {
+    title: string;
+    maxOptions: number;
+    items: Food[];
+    isObligatory?: boolean;
+  }[];
 }
 
 export default Menu;

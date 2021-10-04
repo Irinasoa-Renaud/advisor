@@ -6,11 +6,12 @@ interface Iprops {
     aEmporter: boolean;
     setValue: (e: any) => void;
     value: any;
+    code: boolean;
 }
 
 const OptionRestaurant: FC<Iprops> = (props: any) => {
 
-    const { isDelivery, aEmporter, setValue, value } = props as Iprops;
+    const { isDelivery, aEmporter, setValue, value, code } = props as Iprops;
 
     return (<>
 
@@ -19,16 +20,24 @@ const OptionRestaurant: FC<Iprops> = (props: any) => {
             setValue={setValue}
             title="Paramètres remise de livraison"
             values={value}
-            type="isDelivery"
+            type="delivery"
         />
 
         <ComponentForm
-            isView={isDelivery}
+            isView={aEmporter}
             setValue={setValue}
-            title="Paramètres remise da a emporter"
+            title="Paramètres remise des plat à emporter"
             values={value}
             type="aEmporter"
+        />
 
+        <ComponentForm
+            isView={code}
+            setValue={setValue}
+            title="Paramètres remise code promo"
+            values={value}
+            type="codeDiscount"
+            code={true}
         />
 
     </>)

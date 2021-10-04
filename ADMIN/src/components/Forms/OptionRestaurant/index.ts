@@ -1,3 +1,3 @@
-import OptionRestaurant from './opotionRestaurant';
+import OptionRestaurant from './OptionRestaurant';
 
 export default OptionRestaurant;

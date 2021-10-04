@@ -101,6 +101,7 @@ export const addMenu: (data: MenuFormType) => Promise<void> = (data) => {
     prices: undefined,
   }
 
+  console.log("dataSend", dataSend);
 
   return Api.post('/menus', { ...dataSend })
 

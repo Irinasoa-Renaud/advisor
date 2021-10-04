@@ -142,6 +142,7 @@ const PlatRecommanderForm: React.FC<PlatRecommandedFormProps> = ({
             <Autocomplete
               loadingText="Chargement"
               noOptionsText="Aucun Plat disponible"
+              style={{ flexGrow: 2 }}
               loading={loadingRestaurants}
               options={foods?.filter((items: any) => {
                 return !values.food.includes(items._id) &&

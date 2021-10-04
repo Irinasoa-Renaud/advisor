@@ -73,7 +73,6 @@ router.get('/:platId', adminGuard, async function(req, res) {
 router.post('/', adminGuard, async function(req, res, next) {
 
     const data = parse(req.body);
-    console.log("data", data)
 
     if (!data) res.status(BAD_REQUEST).json({ message: 'You need to provide ressource' });
 

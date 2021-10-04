@@ -50,6 +50,7 @@ const MenuListPage: React.FC = () => {
   const [saving, setSaving] = useState<boolean>(false);
   const [selected, setSelected] = useState<string[]>([]);
   const [updating, setUpdating] = useState<boolean>(false);
+  const [activeOndragDrop, setActiveOndragDrop] = useState<boolean>(false);
   const modif = useRef<MenuFormType>();
 
   const { enqueueSnackbar } = useSnackbar();
@@ -132,6 +133,7 @@ const MenuListPage: React.FC = () => {
       foods,
       type,
       price: { amount: price },
+      options
     } = menu;
 
     let prices: any = {};
@@ -148,6 +150,12 @@ const MenuListPage: React.FC = () => {
       description,
       foods: foods.map(({ food: { _id } }) => _id),
       prices: prices,
+      options: options && options.length ? options.map(({ title, maxOptions, items, isObligatory }) => ({
+        title,
+        maxOptions: String(maxOptions),
+        items: items.map((v) => v),
+        isObligatory
+      })) : [],
       restaurant: restaurant?._id || '',
       type,
     };
@@ -170,6 +178,12 @@ const MenuListPage: React.FC = () => {
     fetch();
   }, [fetch]);
 
+  const setArraySelected = (data: any) => {
+    if (data.restaurant !== "") {
+      setActiveOndragDrop(true);
+    }
+  }
+
   return (
     <>
       <PageHeader
@@ -183,6 +197,7 @@ const MenuListPage: React.FC = () => {
           records={records}
           selected={selected}
           onSelectedChange={setSelected}
+          setArraySelected={setArraySelected}
           onDeleteClick={() => {
             setUpdating(true);
             handleDeleteSelection().finally(() => setUpdating(false));
@@ -194,7 +209,7 @@ const MenuListPage: React.FC = () => {
           options={{
             orderBy: 'priority',
             hasActionsColumn: true,
-            enableDragAndDrop: true,
+            enableDragAndDrop: activeOndragDrop,
             filters: [
               {
                 id: 'name',

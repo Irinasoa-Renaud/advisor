@@ -223,7 +223,8 @@ const RestaurantListPage: React.FC = () => {
       deliveryFixed,
       DistanceMax,
       discountType,
-      discountIsPrice
+      discountIsPrice,
+      hasCodePromo
     } = restaurant;
 
     modif.current = {
@@ -237,6 +238,7 @@ const RestaurantListPage: React.FC = () => {
       surPlace,
       address,
       admin: admin._id,
+      hasCodePromo: hasCodePromo,
       categories: category.map(({ _id }) => _id),
       city,
       postalCode,

@@ -153,7 +153,8 @@ export const Card: FC<CardProps> = ({
     <div ref={ref} style={{ ...style, opacity }} data-handler-id={handlerId}>
 
       <Grid container={true} key={index}  >
-        <Grid item xs={3}>
+
+        <Grid item xs={4}>
           <TextField
             fullWidth
             variant="outlined"
@@ -171,16 +172,16 @@ export const Card: FC<CardProps> = ({
             }}
           />
         </Grid>
-        <Grid item xs={3}>
+
+        <Grid item xs={2}>
           <TextField
-            name="maxOptions"
-            //     value={html?.maxOptions || ""}
-            value={html?.maxOptions || ""}
-            type="number"
             fullWidth
             variant="outlined"
-            placeholder="Choix maximum"
+            placeholder="Titre"
             style={{ flexGrow: 1 }}
+            //     value={html?.title || ""}
+            value={html?.maxOptions || ""}
+            name="maxOptions"
             onChange={(e: any) => {
               onchange({
                 value: e.target.value,
@@ -206,6 +207,7 @@ export const Card: FC<CardProps> = ({
             value={priority(accompanimentOptions, html?.items.map((item: any) => item._id)).filter(({ _id }) =>
               html?.items.find((d: any) => d._id === _id),
             )}
+
             renderInput={(params: any) => (
               <TextField
                 {...params}

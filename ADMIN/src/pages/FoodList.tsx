@@ -128,6 +128,7 @@ const FoodListPage: React.FC = () => {
             variant: 'success',
           });
 
+          setOpenForm(false);
 
           EventEmitter.emit('REFRESH');
         } catch (err: any) {

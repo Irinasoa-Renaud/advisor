@@ -30,6 +30,8 @@ import DateRangeFilter from './DateRangeFilter';
 import moment from 'moment';
 import { getRestaurants } from '../../services/restaurant';
 import EuroSymbolIcon from '@material-ui/icons/EuroSymbol';
+import { Autocomplete } from '@material-ui/lab';
+
 
 const useToolbarStyles = makeStyles((theme) => ({
   root: {
@@ -181,6 +183,7 @@ function TableToolbar<T>(props: TableToolbarProps<T>) {
   const [activeButtonId, setActiveButtonId] = useState<number>(2);
 
   const [restoOptions, setRestoOptions] = useState<any[]>([]);
+  const [loadingRestaurant, setLoadingRestaurant] = useState<boolean>(false);
   const [activeType, setActiveType] = useState<boolean>(false);
   const [restaurantSelected, setRestaurantSelected] = useState<any>(false);
   const [foodType, setFoodType] = useState<any[]>([]);
@@ -212,6 +215,7 @@ function TableToolbar<T>(props: TableToolbarProps<T>) {
     getRestaurants()
       .then((data: any) => {
         setFoodType(noDuplicate(data).map((d: any) => ({ label: d.name.fr, value: d.name.fr, restoName: d.restoName })));
+        setLoadingRestaurant(false);
         setRestoOptions(data.map((d: any) => ({ label: d.name, value: d.name })) || [])
       });
 
@@ -623,8 +627,37 @@ function TableToolbar<T>(props: TableToolbarProps<T>) {
                 )
               else if (filter.type === 'RESTAURANT')
                 return (
-                  <React.Fragment key={id as string}>
-                    <FormControl variant="filled" style={{ width: '200px', marginRight: '8px' }}>
+                  <div style={{
+                    width: '30%'
+                  }}>
+                    <React.Fragment key={id as string}>
+                      <Autocomplete
+                        noOptionsText="Aucun restaurant disponible"
+                        loading={loadingRestaurant}
+                        options={restoOptions}
+                        getOptionLabel={(option: any) => option.label}
+                        value={restoOptions.find(({ value }) => value === filterValues[id as keyof T]?.restaurant
+                        ) || null}
+                        onChange={(e: any, value: any) => {
+
+                          onFilterValuesChange?.(id as string, {
+                            restaurant: value.value as string,
+                          });
+
+                          setRestaurantSelected(value.value);
+                          setActiveType(true);
+
+                        }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            variant="outlined"
+                            placeholder="Restaurant"
+                          />
+                        )}
+                      />
+
+                      {/* <FormControl variant="filled" style={{ width: '200px', marginRight: '8px' }}>
                       <InputLabel id="demo-simple-select-outlined-label" >Nom du restaurant</InputLabel>
                       <Select
                         labelId="demo-simple-select-outlined-label"
@@ -643,15 +676,19 @@ function TableToolbar<T>(props: TableToolbarProps<T>) {
                           <MenuItem key={index} value={value}>{label}</MenuItem>
                         ))}
                       </Select>
-                    </FormControl>
-                    {!alwaysOn && (
-                      <IconButton
-                        onClick={() => onDeactivateFilter?.(id as string)}
-                      >
-                        <Close />
-                      </IconButton>
-                    )}
-                  </React.Fragment>
+                    </FormControl> */}
+                      {
+                        !alwaysOn && (
+                          <IconButton
+                            onClick={() => onDeactivateFilter?.(id as string)}
+                          >
+                            <Close />
+                          </IconButton>
+                        )
+                      }
+                    </React.Fragment>
+                  </div>
+
                 )
 
               else if (filter.type === 'TYPE_PLAT')
@@ -693,7 +730,7 @@ function TableToolbar<T>(props: TableToolbarProps<T>) {
 
             return null;
           })}
-      </CustomScrollbar>
+      </CustomScrollbar >
     );
   }, [
     activatedFilters,

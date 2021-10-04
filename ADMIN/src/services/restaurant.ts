@@ -77,6 +77,7 @@ export const getOneRestaurant: (filter?: {
 
 const getFormData: (data: Partial<RestaurantFormType>) => FormData = (data) => {
   const formData = new FormData();
+
   data.name && formData.append('name', data.name);
   data.minPriceIsDelivery && formData.append('minPriceIsDelivery', data.minPriceIsDelivery);
   data.description && formData.append('description', data.description);
@@ -197,7 +198,25 @@ const getFormData: (data: Partial<RestaurantFormType>) => FormData = (data) => {
   typeof data.isBoissonActive === 'boolean' &&
     formData.append('isBoissonActive', JSON.stringify(data.isBoissonActive));
 
-  data.discount && formData.append('discount', JSON.stringify(data.discount));
+  typeof data.hasCodePromo === 'boolean' &&
+    formData.append('hasCodePromo', JSON.stringify(data.hasCodePromo));
+
+  data.discount && formData.append('discount', JSON.stringify({
+    delivery: {
+      discountIsPrice: data.discount.delivery.discountIsPrice,
+      value: data.discount.delivery.value
+    },
+    aEmporter: {
+      discountIsPrice: data.discount.aEmporter.discountIsPrice,
+      value: data.discount.aEmporter.value
+    },
+    codeDiscount: {
+      discountIsPrice: data.discount.codeDiscount.discountIsPrice,
+      value: data.discount.codeDiscount.value,
+      code: data.discount.codeDiscount.code || [],
+    }
+  }
+  ));
 
   return formData;
 };
@@ -207,7 +226,6 @@ export const addRestaurant: (data: RestaurantFormType) => Promise<void> =
 
     const formData = getFormData(data);
 
-    console.log("formData", data)
     await Api.post('/restaurants', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -219,6 +237,7 @@ export const updateRestaurant: (
   id: string,
   data: Partial<RestaurantFormType>,
 ) => Promise<void> = async (id, data) => {
+
   const formData = getFormData(data);
 
   await Api.put(`/restaurants/${id}`, formData, {

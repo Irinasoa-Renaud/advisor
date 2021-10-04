@@ -266,7 +266,7 @@ const UserForm: React.FC<UserFormProps> = ({
           >
             Annuler
           </Button>
-          {console.log("validated", initialValues.validated)}
+
           {
             !initialValues.validated && (
               <Button
@@ -279,9 +279,10 @@ const UserForm: React.FC<UserFormProps> = ({
                 Annuler
               </Button>
             )
-
           }
+
           <Box width={theme.spacing(2)} />
+
           <Button
             variant="contained"
             color="primary"

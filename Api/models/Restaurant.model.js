@@ -174,6 +174,10 @@ const Restaurant = new Schema({
         type: Boolean,
         default: true,
     },
+    hasCodePromo: {
+        type: Boolean,
+        default: false,
+    },
     discount: {
         delivery: {
             discountIsPrice: {

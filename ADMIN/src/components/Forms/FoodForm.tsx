@@ -292,8 +292,6 @@ const FoodForm: React.FC<FoodFormProps> = ({
 
     } catch (err: any) {
 
-      console.log("err", err)
-
       enqueueSnackbar("Erreur lors de l'ajout", {
         variant: 'error',
       });
@@ -306,7 +304,6 @@ const FoodForm: React.FC<FoodFormProps> = ({
 
   const setAddEdit = (value: any, index: number) => {
 
-    console.log("setAddEdit", value);
     setInitValue(value);
     setIndex(index);
     setOpenAccompagnement(true)

@@ -37,7 +37,7 @@ router.get('/', async function(req, res, next) {
 
         menus = menus.map((e) => ({
             ...e,
-            foods: e.foods.filter(({ food }) => !!food),
+            foods: [],
         }));
 
         if (lang)
@@ -51,20 +51,7 @@ router.get('/', async function(req, res, next) {
                     })),
                 },
                 name: e.name && (e.name[lang] || e.name.fr),
-                foods: e.foods
-                    .filter(({ food }) => !!food)
-                    .map(({ food: f, additionalPrice }) => ({
-                        food: f && {
-                            ...f,
-                            name: f.name && (f.name[lang] || f.name.fr),
-
-                            type: {
-                                ...f.type,
-                                name: f.type.name && (f.type.name[lang] || f.type.name.fr),
-                            },
-                        },
-                        additionalPrice,
-                    })),
+                foods: []
             }));
 
         res.json(menus);
@@ -109,18 +96,7 @@ router.get('/:id', async function(req, res, next) {
                         name: c.name && (c.name[lang] || c.name.fr),
                     })),
                 },
-                foods: menu.foods.map(({ food: f, additionalPrice }) => ({
-                    food: f && {
-                        ...f,
-                        name: f.name && (f.name[lang] || f.name.fr),
-
-                        type: {
-                            ...f.type,
-                            name: f.type.name && (f.type.name[lang] || f.type.name.fr),
-                        },
-                    },
-                    additionalPrice,
-                })),
+                foods: [],
             };
         }
 

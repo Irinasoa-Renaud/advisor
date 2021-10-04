@@ -10,6 +10,7 @@ import Collapse from '@material-ui/core/Collapse';
 import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
 import IOSSwitch from '../../Common/IOSSwitch';
+import Input from '../../Common/inputChip';
 
 interface Iprops {
     isView: boolean;
@@ -17,89 +18,132 @@ interface Iprops {
     title: string;
     values: any;
     type: string;
+    code?: boolean;
 }
 
 const ComponentForm: FC<Iprops> = (props: any) => {
 
-    const { isView, setValue, title, values, type } = props as Iprops;
+    const { isView, setValue, title, values, type, code } = props as Iprops;
 
     const [open, setOpen] = useState(false);
+    const [discountIsPrice, setdiscountIsPrice] = useState(values.discount[type]?.discountIsPrice);
 
     const onchange = (e: any) => {
 
-        const { name, value } = e.target;
+        const { name, value, checked } = e.target;
 
-        const allvalue = {
-            ...values
+        const discount = {
+            ...values.discount,
+            [type]: {
+                ...values.discount[type],
+                [name]: name === 'discountIsPrice' ? checked : value
+            }
         }
 
-        allvalue[type][name] = value;
+        name === 'discountIsPrice' && setdiscountIsPrice(!discountIsPrice);
 
-        setValue(allvalue);
+        setValue({
+            ...values,
+            discount: discount
+        });
+
+    }
+
+    const addCodePromo = (e: any[]) => {
+
+        const discount = {
+            ...values.discount,
+            [type]: {
+                ...values.discount[type],
+                code: [...e]
+            }
+        }
+
+        setValue({
+            ...values,
+            discount: discount
+        });
 
     }
 
     return (<>
-        <Grid item xs={12}>
 
-            <div
-                style={{
-                    cursor: 'pointer'
-                }}
-                onClick={() => setOpen(!open)}
-            >
+        {isView && (
+            <div style={{
+                border: '1px dashed #CDCDCD',
+                width: '100%',
+                margin: '1vh 0',
+                padding: '2vh'
+            }}>
+                <Grid item xs={12}>
 
-                <Grid container={true}>
+                    <div
+                        style={{
+                            cursor: 'pointer'
+                        }}
+                        onClick={() => setOpen(!open)}
+                    >
 
-                    <Grid item xs>
-                        <Typography variant="h4" style={{ fontWeight: 'bold' }} gutterBottom>
-                            {title}
-                        </Typography>
-                    </Grid>
+                        <Grid container={true}>
 
-                    <Grid item>
-                        {open ? <ExpandLess /> : <ExpandMore />}
-                    </Grid>
+                            <Grid item xs>
+                                <Typography variant="h6" style={{ fontWeight: 'bold' }} gutterBottom>
+                                    {title}
+                                </Typography>
+                            </Grid>
+
+                            <Grid item>
+                                {open ? <ExpandLess /> : <ExpandMore />}
+                            </Grid>
+
+                        </Grid>
+
+                    </div>
+
+                    <Collapse in={open}>
+
+                        {code && (
+                            <Input
+                                value={values.discount[type]?.code || []}
+                                updateValue={addCodePromo}
+                                name="code"
+                            />
+                        )}
+
+                        <TextField
+                            name="value"
+                            type="number"
+                            placeholder="Remise"
+                            InputProps={{
+                                startAdornment: (
+                                    <InputAdornment position="start">{discountIsPrice ? `€` : `%`}</InputAdornment>
+                                ),
+                            }}
+                            variant="outlined"
+                            fullWidth
+                            defaultValue={values.discount[type]?.value}
+                            onChange={onchange}
+                        />
+
+                        <FormControlLabel
+                            control={
+                                <IOSSwitch
+                                    defaultChecked={discountIsPrice}
+                                    onChange={onchange}
+                                    name="discountIsPrice"
+                                />
+                            }
+                            label="Le remise est un prix fixe"
+                        />
+
+                    </Collapse>
 
                 </Grid>
-
             </div>
 
-            <Collapse in={open}>
+        )
+        }
 
-                <Typography variant="h5" gutterBottom>
-                    Remise
-                </Typography>
-
-                <TextField
-                    name="discount"
-                    type="number"
-                    placeholder="Remise"
-                    InputProps={{
-                        startAdornment: (
-                            <InputAdornment position="start">{values[type]?.isPriceFix ? `€` : `%`}</InputAdornment>
-                        ),
-                    }}
-                    variant="outlined"
-                    fullWidth
-                    defaultValue={values[type]?.discount}
-                    onChange={setValue}
-                />
-
-                <FormControlLabel
-                    control={
-                        <IOSSwitch
-                            defaultChecked={values[type]?.discountIsPrice}
-                            onChange={setValue}
-                            name="discountIsPrice"
-                        />
-                    }
-                    label="Le remise est un prix fixe"
-                />
-
-            </Collapse>
-
-        </Grid>
     </>)
 
 }

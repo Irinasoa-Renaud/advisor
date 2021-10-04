@@ -308,7 +308,6 @@ router.post('/sendCode', async function(req, res, next) {
                     message: 'No valid related user nor customer found in request body',
                 });
 
-            console.log("code", code)
 
             await sendMessage(
                 'Menu advisor',

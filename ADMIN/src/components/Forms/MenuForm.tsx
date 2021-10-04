@@ -21,7 +21,13 @@ import { Autocomplete } from '@material-ui/lab';
 import { getFoods } from '../../services/food';
 import Food from '../../models/Food.model';
 import { useAuth } from '../../providers/authentication';
-import InputMenu from '../../components/DND/InputMenu';
+import InputMenu from '../../components/DND/ListMenu';
+import {
+  AddCircle as AddCircleIcon,
+  ExpandMore as ExpandMoreIcon,
+} from '@material-ui/icons';
+import FormDialog from '../Common/FormDialog';
+import AddEditMenu from '../../components/Forms/AddEditMenu';
 
 export type MenuFormType = {
   _id?: string;
@@ -31,6 +37,7 @@ export type MenuFormType = {
   type: string;
   restaurant: string;
   foods: string[];
+  options: { title: string; maxOptions: string; items: any[], isObligatory?: boolean }[];
   price: string;
   prices: any;
 };
@@ -49,6 +56,7 @@ const MenuForm: React.FC<MenuFormProps> = ({
     type: '',
     restaurant: '',
     foods: [],
+    options: [],
     price: '0',
     prices: {},
   },
@@ -62,8 +70,12 @@ const MenuForm: React.FC<MenuFormProps> = ({
   const [loadingRestaurants, setLoadingRestaurants] = useState<boolean>(false);
 
   const [foodOptions, setFoodOptions] = useState<Food[]>([]);
-
+  const [initValue, setInitValue] = useState<any>({});
+  const [index, setIndex] = useState<number>(0);
+  const [openAccompagnement, setOpenAccompagnement] = useState<boolean>(false);
   const [foods, setFoods] = useState<Food[]>([]);
+  const [showUpdatePrice, setUpdatePrice] = useState(false);
+
 
   const validation: FormValidationHandler<MenuFormType> = (data) => {
     const errors: FormError<MenuFormType> = {};
@@ -72,7 +84,7 @@ const MenuForm: React.FC<MenuFormProps> = ({
     if (!data.type.length) errors.type = 'Ce champ ne doit pas être vide';
     if (!data.restaurant.length)
       errors.restaurant = 'Ce champ ne doit pas être vide';
-    if (!data.foods.length)
+    if (!data.options.length)
       errors.foods = 'Vous devez sélectionner au moins un plat';
     if (!data.description.length)
       errors.description = 'Ce champ ne doit pas être vide';
@@ -87,6 +99,7 @@ const MenuForm: React.FC<MenuFormProps> = ({
     handleInputBlur,
     handleSelectChange,
     errors,
+    setOption,
     setFoodsId
   } = useForm(
     {
@@ -157,28 +170,6 @@ const MenuForm: React.FC<MenuFormProps> = ({
 
   }
 
-  const priority = (a: any[], b: any[]) => {
-
-    const array = [];
-
-    if (b.length > 0) {
-
-      for (let i = 0; i < b.length; i++) {
-        array.push(a.filter((items: any) => items._id === b[i])[0])
-      }
-      const priority = [...array].concat(a.filter((items: any) => !b.includes(items._id)));
-
-      if (priority.filter((item: any) => item).length) {
-        return priority;
-      }
-
-    }
-
-    return a;
-
-  }
-
-
   const listPrice = (a: any[], b: any[]) => {
 
     const array = [];
@@ -201,122 +192,142 @@ const MenuForm: React.FC<MenuFormProps> = ({
 
   }
 
+  const setAddEdit = (value: any, index: number) => {
+
+    setInitValue(value);
+    setIndex(index);
+    setOpenAccompagnement(true)
+  }
+
+  const addNewAccompaniment = useCallback(() => {
+
+    const { options } = values;
+
+    options.push({
+      title: '',
+      maxOptions: '0',
+      items: [],
+      isObligatory: false
+    });
+
+    setValues((v) => ({ ...v, options }));
+  }, [setValues, values]);
+
   return (
-    <form
-      noValidate
-      onSubmit={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        (e.currentTarget.querySelector(
-          '[type=submit]',
-        ) as HTMLInputElement).focus();
+    <>
+      <form
+        noValidate
+        onSubmit={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          (e.currentTarget.querySelector(
+            '[type=submit]',
+          ) as HTMLInputElement).focus();
 
 
-        if (validate()) onSave?.(values);
-      }}
-    >
-      <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <Typography variant="h5" gutterBottom>
-            Nom
-          </Typography>
-          <TextField
-            fullWidth
-            variant="outlined"
-            placeholder="Nom"
-            name="name"
-            defaultValue={initialValues.name}
-            onBlur={handleInputBlur}
-            error={!!errors.name}
-            helperText={errors.name}
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <Typography variant="h5" gutterBottom>
-            Type
-          </Typography>
-          <FormControl fullWidth variant="outlined" error={!!errors.type}>
-            <Select
-              defaultValue={initialValues.type}
-              name="type"
-              onChange={handleSelectChange}
-            >
-              <MenuItem value="" disabled>
-                Sélectionner un type
-              </MenuItem>
-              <MenuItem value="per_food">Prix par plats</MenuItem>
-              {/* <MenuItem value="priceless">Sans prix</MenuItem> */}
-              <MenuItem value="fixed_price">Prix fixe</MenuItem>
-            </Select>
-            <FormHelperText>{errors.type}</FormHelperText>
-          </FormControl>
-        </Grid>
-        {values.type === 'fixed_price' && (
+          if (validate()) onSave?.(values);
+        }}
+      >
+        <Grid container spacing={2}>
           <Grid item xs={12}>
             <Typography variant="h5" gutterBottom>
-              Prix
+              Nom
             </Typography>
             <TextField
               fullWidth
               variant="outlined"
-              placeholder="price"
-              name="price"
-              defaultValue={initialValues.price}
+              placeholder="Nom"
+              name="name"
+              defaultValue={initialValues.name}
               onBlur={handleInputBlur}
-              error={!!errors.price}
-              helperText={errors.price}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">€</InputAdornment>
-                ),
-              }}
+              error={!!errors.name}
+              helperText={errors.name}
             />
           </Grid>
-        )}
-        {!isRestaurantAdmin && (
           <Grid item xs={12}>
             <Typography variant="h5" gutterBottom>
-              Restaurant
+              Type
             </Typography>
-            <Autocomplete
-              loadingText="Chargement"
-              noOptionsText="Aucun restaurant disponible"
-              loading={loadingRestaurants}
-              options={restaurantOptions}
-              getOptionLabel={(option) => option.name}
-              value={
-                restaurantOptions.find(
-                  ({ _id }) => values.restaurant === _id,
-                ) || null
-              }
-              onChange={(_, v) => {
-                if (v) {
-                  setValues((old) => ({ ...old, restaurant: v._id }));
-                  handleSelectResto(v)
-                }
-                else {
-                  setValues((old) => ({ ...old, restaurant: '' }));
-                  setSelectedResto(null)
-                  setDisableAll(true)
-                }
-              }}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  variant="outlined"
-                  placeholder="Restaurant"
-                  error={!!errors.restaurant}
-                  helperText={errors.restaurant}
-                />
-              )}
-            />
+            <FormControl fullWidth variant="outlined" error={!!errors.type}>
+              <Select
+                defaultValue={initialValues.type}
+                name="type"
+                onChange={handleSelectChange}
+              >
+                <MenuItem value="" disabled>
+                  Sélectionner un type
+                </MenuItem>
+                <MenuItem value="per_food">Prix par plats</MenuItem>
+                {/* <MenuItem value="priceless">Sans prix</MenuItem> */}
+                <MenuItem value="fixed_price">Prix fixe</MenuItem>
+              </Select>
+              <FormHelperText>{errors.type}</FormHelperText>
+            </FormControl>
           </Grid>
-        )}
-        <Grid item xs={12}>
-          <Typography variant="h5" gutterBottom>
-            Plats
-          </Typography>
-          {/* <Autocomplete
+          {values.type === 'fixed_price' && (
+            <Grid item xs={12}>
+              <Typography variant="h5" gutterBottom>
+                Prix
+              </Typography>
+              <TextField
+                fullWidth
+                variant="outlined"
+                placeholder="price"
+                name="price"
+                defaultValue={initialValues.price}
+                onBlur={handleInputBlur}
+                error={!!errors.price}
+                helperText={errors.price}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">€</InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+          )}
+          {!isRestaurantAdmin && (
+            <Grid item xs={12}>
+              <Typography variant="h5" gutterBottom>
+                Restaurant
+              </Typography>
+              <Autocomplete
+                loadingText="Chargement"
+                noOptionsText="Aucun restaurant disponible"
+                loading={loadingRestaurants}
+                options={restaurantOptions}
+                getOptionLabel={(option) => option.name}
+                value={
+                  restaurantOptions.find(
+                    ({ _id }) => values.restaurant === _id,
+                  ) || null
+                }
+                onChange={(_, v) => {
+                  if (v) {
+                    setValues((old) => ({ ...old, restaurant: v._id }));
+                    handleSelectResto(v)
+                  }
+                  else {
+                    setValues((old) => ({ ...old, restaurant: '' }));
+                    setSelectedResto(null)
+                    setDisableAll(true)
+                  }
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    variant="outlined"
+                    placeholder="Restaurant"
+                    error={!!errors.restaurant}
+                    helperText={errors.restaurant}
+                  />
+                )}
+              />
+            </Grid>
+          )}
+          <Grid item xs={12}>
+
+            {/* <Autocomplete
             loadingText="Chargement"
             noOptionsText="Aucun plat disponible"
             loading={loadingFoods}
@@ -349,126 +360,183 @@ const MenuForm: React.FC<MenuFormProps> = ({
             )}
           />  */}
 
-          <InputMenu
+            {/* <InputMenu
             listMenu={foodOptions}
             disabled={!selectedResto && disableAll}
             setMenu={setAccompagnement}
             value={priority(foodOptions, values.foods).filter((item: any) =>
               values.foods.find((d) => item._id === d),
             )}
-          />
-
-        </Grid>
-
-        {(values.type === 'fixed_price' && listPrice(foodOptions, values.foods).length > 0) && (
-
-          <Grid item xs={12}>
-            <Typography
-              variant="h5"
-              gutterBottom
-              style={{ textDecoration: 'underline', fontWeight: 'bold' }}
-            >
-              Prix additionnels
-            </Typography>
-            <Container
-              maxWidth="sm"
+          /> */}
+            <Grid
+              container
+              justify="flex-end"
+              alignItems="center"
               style={{
-                display: 'grid',
-                gridTemplateColumns: 'auto 1fr',
-                columnGap: theme.spacing(2),
-                padding: theme.spacing(2, 0),
+                position: 'relative',
+                margin: '1vh 0'
               }}
             >
-              {listPrice(foodOptions, values.foods).map((food, i) => (
-                <React.Fragment key={i}>
-                  <Typography
-                    variant="h5"
-                    style={{ display: 'flex', alignItems: 'center' }}
-                  >
-                    <span
-                      style={{
-                        width: 8,
-                        height: 8,
-                        borderRadius: 4,
-                        backgroundColor: 'grey',
-                        marginRight: theme.spacing(1),
-                      }}
-                    ></span>
-                    {food.name}
-                  </Typography>
-                  <TextField
-                    type="number"
-                    fullWidth
-                    variant="outlined"
-                    placeholder="Prix"
-                    name={food._id}
-                    defaultValue={values.prices[food._id]}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">€</InputAdornment>
-                      ),
-                    }}
-                    onChange={({ target: { value, name } }) => {
-                      setValues((old) => {
-                        return {
-                          ...old,
-                          prices: {
-                            ...old.prices,
-                            [name]: value
-                          }
-                        }
-                      })
-                    }}
-                  />
-                </React.Fragment>
-              ))}
-            </Container>
-          </Grid>
-        )}
+              <Button
+                variant="contained"
+                startIcon={<AddCircleIcon />}
+                color="secondary"
+                onClick={addNewAccompaniment}
+              >
+                Ajouter des plats
+              </Button>
+            </Grid>
 
-        <Grid item xs={12}>
-          <Typography variant="h5" gutterBottom>
-            Description
-          </Typography>
-          <TextField
-            fullWidth
-            variant="outlined"
-            placeholder="Description"
-            name="description"
-            multiline
-            rows={6}
-            defaultValue={initialValues.description}
-            onBlur={handleInputBlur}
-            error={!!errors.description}
-            helperText={errors.description}
-          />
+            <Grid item xs={12}>
+              <InputMenu
+                updateList={(value: any) => {
+                  setOption(value);
+                }}
+                list={values.options.map((items: any, i: number) => {
+                  let id = i + 1;
+                  return { ...items, id: items.id ? items.id : id };
+                })}
+                setAddEdit={setAddEdit}
+                setValues={setValues}
+                values={values}
+                accompanimentOptions={foodOptions}
+                setUpdatePrice={setUpdatePrice}
+                selectedResto={selectedResto}
+                disableAll={disableAll}
+              />
+            </Grid>
+          </Grid>
+
+          {(values.type === 'fixed_price' && listPrice(foodOptions, values.foods).length > 0) && (
+
+            <Grid item xs={12}>
+              <Typography
+                variant="h5"
+                gutterBottom
+                style={{ textDecoration: 'underline', fontWeight: 'bold' }}
+              >
+                Prix additionnels
+              </Typography>
+              <Container
+                maxWidth="sm"
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'auto 1fr',
+                  columnGap: theme.spacing(2),
+                  padding: theme.spacing(2, 0),
+                }}
+              >
+                {listPrice(foodOptions, values.foods).map((food, i) => (
+                  <React.Fragment key={i}>
+                    <Typography
+                      variant="h5"
+                      style={{ display: 'flex', alignItems: 'center' }}
+                    >
+                      <span
+                        style={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: 4,
+                          backgroundColor: 'grey',
+                          marginRight: theme.spacing(1),
+                        }}
+                      ></span>
+                      {food.name}
+                    </Typography>
+                    <TextField
+                      type="number"
+                      fullWidth
+                      variant="outlined"
+                      placeholder="Prix"
+                      name={food._id}
+                      defaultValue={values.prices[food._id]}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">€</InputAdornment>
+                        ),
+                      }}
+                      onChange={({ target: { value, name } }) => {
+                        setValues((old) => {
+                          return {
+                            ...old,
+                            prices: {
+                              ...old.prices,
+                              [name]: value
+                            }
+                          }
+                        })
+                      }}
+                    />
+                  </React.Fragment>
+                ))}
+              </Container>
+            </Grid>
+          )}
+
+          <Grid item xs={12}>
+            <Typography variant="h5" gutterBottom>
+              Description
+            </Typography>
+            <TextField
+              fullWidth
+              variant="outlined"
+              placeholder="Description"
+              name="description"
+              multiline
+              rows={6}
+              defaultValue={initialValues.description}
+              onBlur={handleInputBlur}
+              error={!!errors.description}
+              helperText={errors.description}
+            />
+          </Grid>
+          <Grid item container justify="flex-end" alignItems="center" xs={12}>
+            <Button
+              variant="contained"
+              color="default"
+              disabled={saving}
+              size="large"
+              onClick={onCancel}
+            >
+              Annuler
+            </Button>
+            <Box width={theme.spacing(2)} />
+            <Button
+              variant="contained"
+              color="primary"
+              size="large"
+              type="submit"
+            >
+              {!saving ? (
+                'Enregistrer'
+              ) : (
+                <CircularProgress color="inherit" size="25.45px" />
+              )}
+            </Button>
+          </Grid>
         </Grid>
-        <Grid item container justify="flex-end" alignItems="center" xs={12}>
-          <Button
-            variant="contained"
-            color="default"
-            disabled={saving}
-            size="large"
-            onClick={onCancel}
-          >
-            Annuler
-          </Button>
-          <Box width={theme.spacing(2)} />
-          <Button
-            variant="contained"
-            color="primary"
-            size="large"
-            type="submit"
-          >
-            {!saving ? (
-              'Enregistrer'
-            ) : (
-              <CircularProgress color="inherit" size="25.45px" />
-            )}
-          </Button>
-        </Grid>
-      </Grid>
-    </form>
+      </form>
+
+      <FormDialog
+        title={`Ajouter un plat`}
+        open={openAccompagnement}
+        fullScreen={false}
+        onClose={() => {
+          setOpenAccompagnement(false)
+        }}
+      >
+        <AddEditMenu
+          initialValues={initValue}
+          accompagnement={foodOptions}
+          updateList={(value: any) => {
+            setOption(value);
+          }}
+          list={values.options}
+          onCancel={() => setOpenAccompagnement(false)}
+          index={index}
+        />
+      </FormDialog>
+    </>
   );
 };
 

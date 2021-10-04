@@ -55,7 +55,6 @@ const Food = new Schema({
             type: mongoose.Schema.Types.Mixed,
         }],
     }],
-
     note: {
         type: Number,
         default: 0

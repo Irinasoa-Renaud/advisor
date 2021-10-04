@@ -45,7 +45,7 @@ const Menu = new Schema({
     //         },
     //     },
     // }, ],
-    foods: [{
+    options: [{
         title: String,
         maxOptions: Number,
         isObligatory: Boolean,

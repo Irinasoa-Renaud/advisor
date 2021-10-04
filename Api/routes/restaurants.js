@@ -333,20 +333,16 @@ router.get('/pages/:id', async function(req, res, next) {
                 .populate({
                     path: 'restaurant',
                     populate: 'category foodTypes',
-                })
-                .populate({
-                    path: 'foods.food',
-                    populate: 'type restaurant',
                 });
-
 
             if (!menu) {
                 return false;
             }
 
-            menu = menu.toJSON();
-
-            menu.foods = menu.foods.filter(({ food }) => !!food);
+            menu = {
+                ...menu.toJSON(),
+                foods: menu.options,
+            };
 
             if (lang) {
                 menu = {
@@ -359,24 +355,10 @@ router.get('/pages/:id', async function(req, res, next) {
                             name: c.name && (c.name[lang] || c.name.fr),
                         })),
                     },
-                    foods: menu.foods.map(({ food: f, additionalPrice }) => ({
-                        food: f && {
-                            ...f,
-                            name: f.name && (f.name[lang] || f.name.fr),
-
-                            type: {
-                                ...f.type,
-                                name: f.type.name && (f.type.name[lang] || f.type.name.fr),
-                            },
-                        },
-                        additionalPrice,
-                    })),
                 };
             }
 
-
-
-            menus.push(menu)
+            menus.push(menu);
         }));
 
         res.send({
@@ -629,19 +611,24 @@ router.delete(
 );
 
 router.post(
-    '/',
-    allAdminGuard,
-    upload.fields([
-        { name: 'logo', maxCount: 1 },
-        { name: 'couvertureMobile', maxCount: 1 },
-        { name: 'couvertureWeb', maxCount: 1 },
-    ]),
+        '/',
+        allAdminGuard,
+        upload.fields([
+            { name: 'logo', maxCount: 1 },
+            { name: 'couvertureMobile', maxCount: 1 },
+            { name: 'couvertureWeb', maxCount: 1 },
+        ]),
 
-    async function(req, res, next) {
-        const body = parse(req.body);
+        async function(req, res, next) {
+            const body = parse(req.body);
+
+            const nbr = await getNextSequenceValue('restaurantNumber');
+            const num_contrat = `R${(`${nbr}`).padStart(4, "0")}`;
+
         const restaurantData = {
             ...body,
             priority: await getNextSequenceValue('restaurantPriority'),
+            name: `${num_contrat} ${body.name}`,
             logo: req.files.logo &&
                 `${process.env.HOST_NAME}/uploads/restaurants/${req.files.logo[0].filename}`,
             couvertureMobile: req.files.couvertureMobile &&
@@ -662,7 +649,6 @@ router.post(
 
         try {
 
-            console.log("restaurantData", restaurantData)
             const restaurant = new Restaurant(restaurantData);
 
             const newRestaurant = await restaurant.save({

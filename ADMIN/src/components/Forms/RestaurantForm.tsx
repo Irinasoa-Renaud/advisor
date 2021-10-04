@@ -55,6 +55,8 @@ import AddressInput from '../Common/AddressInput';
 import { geocodeByAddress, getLatLng, geocodeByPlaceId } from 'react-places-autocomplete';
 import { useAuth } from '../../providers/authentication';
 import OptionRestaurant from './OptionRestaurant';
+import DnDList from '../../components/DND/List';
+
 
 moment.locale('fr');
 
@@ -140,6 +142,7 @@ export type RestaurantFormType = {
   couvertureMobile?: File;
   DistanceMax: number;
   discountIsPrice: boolean;
+  hasCodePromo: boolean;
   logo?: File;
 };
 
@@ -212,6 +215,7 @@ const RestaurantForm: React.FC<RestaurantFormProps> = ({
     isMenuActive: true,
     isBoissonActive: true,
     discountIsPrice: false,
+    hasCodePromo: false,
     livraison: {},
     DistanceMax: 0,
     openingTimes: new Map(
@@ -316,10 +320,6 @@ const RestaurantForm: React.FC<RestaurantFormProps> = ({
 
   const [categoryOptions, setCategoryOptions] = useState<Category[]>([]);
   const [loadingCategories, setLoadingCategories] = useState<boolean>(false);
-
-  // const [typeOptions, setTypeOptions] = useState<FoodType[]>([]);
-  // const [loadingTypes, setLoadingTypes] = useState<boolean>(false);
-
   const [userOptions, setUserOptions] = useState<User[]>([]);
   const [livraisonValue, setLivraisonValue] = useState<any>({});
   const [loadingUsers, setLoadingUsers] = useState<boolean>(false);
@@ -329,7 +329,7 @@ const RestaurantForm: React.FC<RestaurantFormProps> = ({
   const [deliveryFixed, setDeliveryFixed] = useState<boolean>(values.deliveryFixed);
   const [isCB, setIsCB] = useState<boolean>(values.paiementCB);
   const [isDirectToAdvisor, setIsDirectToAdvisor] = useState<boolean>(values.cbDirectToAdvisor);
-  const [isPriceFix, setIsPriceFix] = useState<boolean>(values.discountIsPrice);
+  const [hasCodePromo, setHasCodePromo] = useState<boolean>(values.hasCodePromo);
 
   const [existAdmin, setExistAdmin] = useState<any>(null);
 
@@ -407,8 +407,7 @@ const RestaurantForm: React.FC<RestaurantFormProps> = ({
       });
     }
 
-    addnewLivraison(initialValues.livraison)
-
+    addnewLivraison(initialValues.livraison);
 
   }, [enqueueSnackbar, errors]);
 
@@ -455,8 +454,8 @@ const RestaurantForm: React.FC<RestaurantFormProps> = ({
       setIsAEmporter(checked)
     }
 
-    if (name === 'discountIsPrice') {
-      setIsPriceFix(checked)
+    if (name === 'hasCodePromo') {
+      setHasCodePromo(checked)
     }
 
     setValues((values) => ({
@@ -464,18 +463,6 @@ const RestaurantForm: React.FC<RestaurantFormProps> = ({
       [name]: checked
     }));
   }
-
-  const handleRadioChange = (e: any) => {
-
-    const { name, value } = e.target;
-
-    setValues((values) => ({
-      ...values,
-      discountType: value
-    }));
-
-  }
-
 
   const handleChangeLiraison = (e: any) => {
 
@@ -1206,6 +1193,7 @@ const RestaurantForm: React.FC<RestaurantFormProps> = ({
               label="Activer le menu"
             />
           </Grid>
+
           <Grid item={true} md={4} xs={12}>
 
             <FormControlLabel
@@ -1218,23 +1206,25 @@ const RestaurantForm: React.FC<RestaurantFormProps> = ({
               }
               label="Activer la boisson"
             />
+
           </Grid>
 
 
-          {(isDelivery || isAEmporter) && (
-            <Grid item={true} md={4} xs={12}>
-              <FormControlLabel
-                control={
-                  <IOSSwitch
-                    defaultChecked={isPriceFix}
-                    onChange={handleSwitchDelivery}
-                    name="discountIsPrice"
-                  />
-                }
-                label="Le remise est un prix fixe"
-              />
-            </Grid>
-          )}
+          <Grid item={true} md={4} xs={12}>
+
+            <FormControlLabel
+              control={
+                <IOSSwitch
+                  defaultChecked={hasCodePromo}
+                  onChange={handleSwitchDelivery}
+                  name="hasCodePromo"
+                />
+              }
+              label="Ajouter un code promo"
+            />
+
+          </Grid>
+
         </Grid>
 
         {/**
@@ -1424,6 +1414,7 @@ const RestaurantForm: React.FC<RestaurantFormProps> = ({
           aEmporter={isAEmporter}
           setValue={setValues}
           value={values}
+          code={hasCodePromo}
         />
 
         <Grid item container justify="flex-end" alignItems="center" xs={12}>

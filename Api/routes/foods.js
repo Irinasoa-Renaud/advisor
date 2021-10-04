@@ -129,7 +129,6 @@ router.get('/', async function(req, res, next) {
 
         }
 
-        console.log("foodDocuments", foods.map(e => e.options))
 
         res.json(foods);
 
@@ -266,7 +265,6 @@ router.put(
 
         const data = parse(req.body);
 
-        console.log("data", data)
 
         if (req.file) {
             data.imageURL = `${process.env.HOST_NAME}/uploads/foods/${req.file.filename}`;
@@ -298,7 +296,6 @@ router.put(
 
         } catch (error) {
 
-            console.log("test", error);
             res.status(INTERNAL_SERVER_ERROR);
 
             if (process.env.NODE_ENV === 'development') {

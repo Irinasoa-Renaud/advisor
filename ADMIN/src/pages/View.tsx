@@ -62,7 +62,6 @@ const ViewList: React.FC = () => {
     const handleChange = useCallback(
         (e) => {
             setView((v) => {
-                console.log(v)
                 return {
                     _id: view?._id,
                     [e.target.name]: e.target.checked,
